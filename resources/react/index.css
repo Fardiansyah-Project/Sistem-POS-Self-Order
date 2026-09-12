@@ -1,0 +1,86 @@
+/* ─── Google Fonts ─────────────────────────────────────────────── */
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&family=Inter:wght@400;500;600&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ─── CSS Variables ─────────────────────────────────────────────── */
+:root {
+    --color-brand:    #c97d20;
+    --color-brand-dk: #a6620f;
+    --color-coffee:   #3d2b1f;
+    --color-bg:       #0f0b09;
+    --color-surface:  #1a1410;
+    --color-card:     #231c17;
+    --color-border:   rgba(255,255,255,0.07);
+    --color-text:     #f5ede6;
+    --color-muted:    #a08878;
+    --radius-lg:      1rem;
+    --radius-xl:      1.5rem;
+    --shadow-glow:    0 0 30px rgba(201,125,32,0.15);
+}
+
+/* ─── Base ─────────────────────────────────────────────────────── */
+* {
+    box-sizing: border-box;
+    -webkit-tap-highlight-color: transparent;
+}
+
+html {
+    scroll-behavior: smooth;
+}
+
+body {
+    font-family: 'Poppins', 'Inter', sans-serif;
+    background-color: var(--color-bg);
+    color: var(--color-text);
+    -webkit-font-smoothing: antialiased;
+    min-height: 100dvh;
+    overscroll-behavior: none;
+}
+
+/* ─── Scrollbar ─────────────────────────────────────────────────── */
+::-webkit-scrollbar { width: 4px; height: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--color-brand); border-radius: 999px; }
+
+/* ─── Utilities ─────────────────────────────────────────────────── */
+@layer utilities {
+    .text-brand   { color: var(--color-brand); }
+    .bg-surface   { background-color: var(--color-surface); }
+    .bg-card      { background-color: var(--color-card); }
+    .border-subtle { border-color: var(--color-border); }
+
+    /* Glassmorphism card */
+    .glass {
+        background: rgba(35, 28, 23, 0.7);
+        backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
+        border: 1px solid var(--color-border);
+    }
+
+    /* Gradient text */
+    .gradient-text {
+        background: linear-gradient(135deg, #f5d9a8 0%, var(--color-brand) 60%, #a6620f 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+
+    /* Shimmer loading animation */
+    .shimmer {
+        background: linear-gradient(90deg, var(--color-card) 25%, #2e241e 50%, var(--color-card) 75%);
+        background-size: 200% 100%;
+        animation: shimmer 1.4s infinite;
+    }
+}
+
+@keyframes shimmer {
+    0%   { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+}
+
+/* ─── Smooth page transition ─────────────────────────────────────── */
+.page-enter { opacity: 0; transform: translateY(8px); }
+.page-enter-active { opacity: 1; transform: translateY(0); transition: all 0.3s ease; }

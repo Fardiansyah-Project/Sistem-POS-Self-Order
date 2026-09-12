@@ -1,0 +1,6 @@
+/* Blade/Admin CSS — Bootstrap 5 akan diload via CDN di layout Blade */
+/* File ini digunakan untuk custom styling ringan pada Admin panel */
+
+body {
+    font-family: 'Poppins', sans-serif;
+}

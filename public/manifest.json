@@ -1,0 +1,22 @@
+{
+    "name": "Koriro Coffee Self-Order",
+    "short_name": "Koriro POS",
+    "description": "Pesan kopi favoritmu tanpa antri di Koriro Coffee Tondo",
+    "start_url": "/",
+    "display": "standalone",
+    "background_color": "#0f0b09",
+    "theme_color": "#c97d20",
+    "orientation": "portrait-primary",
+    "icons": [
+        {
+            "src": "/icons/icon-192x192.png",
+            "sizes": "192x192",
+            "type": "image/png"
+        },
+        {
+            "src": "/icons/icon-512x512.png",
+            "sizes": "512x512",
+            "type": "image/png"
+        }
+    ]
+}
