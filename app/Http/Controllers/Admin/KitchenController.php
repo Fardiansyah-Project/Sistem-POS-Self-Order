@@ -4,10 +4,13 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Transaction;
+use App\Services\StockService;
 use Illuminate\Http\Request;
 
 class KitchenController extends Controller
 {
+    public function __construct(private readonly StockService $stock) {}
+
     /**
      * Tampilkan halaman Monitor Dapur
      */
@@ -31,6 +34,10 @@ class KitchenController extends Controller
         $request->validate([
             'order_status' => 'required|in:processing,ready,completed'
         ]);
+
+        if ($request->order_status === 'processing' && $transaction->order_status !== 'processing') {
+            $this->stock->deductForTransaction($transaction);
+        }
 
         $transaction->update([
             'order_status' => $request->order_status

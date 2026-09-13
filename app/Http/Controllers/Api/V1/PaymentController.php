@@ -5,13 +5,17 @@ namespace App\Http\Controllers\Api\V1;
 use App\Http\Controllers\Controller;
 use App\Models\Transaction;
 use App\Services\MidtransService;
+use App\Services\StockService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 
 class PaymentController extends Controller
 {
-    public function __construct(private readonly MidtransService $midtrans) {}
+    public function __construct(
+        private readonly MidtransService $midtrans,
+        private readonly StockService $stock,
+    ) {}
 
     /**
      * POST /api/v1/payments/webhook
@@ -55,6 +59,10 @@ class PaymentController extends Controller
         }
 
         $transaction->update($updateData);
+
+        if ($result['payment_status'] === 'paid') {
+            $this->stock->deductForTransaction($transaction);
+        }
 
         Log::info('Transaksi diupdate', [
             'order_code'     => $result['order_code'],

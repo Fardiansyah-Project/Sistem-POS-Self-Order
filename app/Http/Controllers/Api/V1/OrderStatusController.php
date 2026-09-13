@@ -5,11 +5,15 @@ namespace App\Http\Controllers\Api\V1;
 use App\Http\Controllers\Controller;
 use App\Models\Transaction;
 use App\Services\MidtransService;
+use App\Services\StockService;
 use Illuminate\Http\JsonResponse;
 
 class OrderStatusController extends Controller
 {
-    public function __construct(private readonly MidtransService $midtrans) {}
+    public function __construct(
+        private readonly MidtransService $midtrans,
+        private readonly StockService $stock,
+    ) {}
 
     /**
      * GET /api/v1/orders/{order_code}/status
@@ -24,6 +28,11 @@ class OrderStatusController extends Controller
 
         if ($transaction->payment_status === 'pending') {
             $this->midtrans->syncTransactionStatus($transaction);
+            $transaction->refresh();
+        }
+
+        if ($transaction->payment_status === 'paid') {
+            $this->stock->deductForTransaction($transaction);
             $transaction->refresh();
         }
 

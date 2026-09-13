@@ -24,6 +24,7 @@ class Transaction extends Model
         'snap_token',
         'payment_type',
         'paid_at',
+        'stock_deducted_at',
     ];
 
     protected $casts = [
@@ -31,6 +32,7 @@ class Transaction extends Model
         'tax_amount'   => 'decimal:2',
         'total_amount' => 'decimal:2',
         'paid_at'      => 'datetime',
+        'stock_deducted_at' => 'datetime',
     ];
 
     // Relasi ke detail item pesanan
