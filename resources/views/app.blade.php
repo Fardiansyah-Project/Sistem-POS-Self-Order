@@ -27,7 +27,9 @@
     <div id="root"></div>
 
     <script>
-        // Registrasi Service Worker untuk PWA
+        // Service Worker hanya digunakan di luar environment lokal agar tidak
+        // mencampur asset cache dengan modul Vite saat development.
+        @if (!app()->environment('local'))
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
                 navigator.serviceWorker.register('/sw.js')
@@ -39,6 +41,16 @@
                     });
             });
         }
+        @else
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.getRegistrations().then(registrations => {
+                registrations.forEach(registration => registration.unregister());
+            });
+            caches.keys().then(cacheNames => {
+                cacheNames.forEach(cacheName => caches.delete(cacheName));
+            });
+        }
+        @endif
     </script>
 </body>
 </html>
