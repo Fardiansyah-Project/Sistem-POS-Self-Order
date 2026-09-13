@@ -95,7 +95,13 @@ class ForecastService
      */
     public function getMonthlyUsageHistory(int $ingredientId, int $monthsBack = 6): array
     {
-        $startDate = Carbon::now()->subMonths($monthsBack)->startOfMonth();
+        if ($monthsBack < 1) {
+            return [];
+        }
+
+        // Histori harus berakhir pada bulan berjalan agar penjualan terbaru
+        // ikut menjadi dasar prediksi bulan berikutnya.
+        $startDate = Carbon::now()->subMonths($monthsBack - 1)->startOfMonth();
 
         // Join transaction_details → recipes untuk menghitung actual ingredient usage
         $usageData = DB::table('transaction_details as td')
@@ -118,7 +124,7 @@ class ForecastService
 
         // Isi bulan yang tidak ada transaksi dengan 0
         $result = [];
-        for ($i = $monthsBack; $i >= 1; $i--) {
+        for ($i = $monthsBack - 1; $i >= 0; $i--) {
             $month          = Carbon::now()->subMonths($i)->format('Y-m');
             $result[$month] = (float) ($usageData[$month] ?? 0);
         }
