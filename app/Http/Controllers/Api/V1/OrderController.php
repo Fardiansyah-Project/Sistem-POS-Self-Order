@@ -66,7 +66,7 @@ class OrderController extends Controller
             }
 
             // Hitung pajak (PPN 11% — bisa dikonfigurasi)
-            $taxRate   = 0; // set 0.11 jika PPN diaktifkan
+            $taxRate   = 0.11; 
             $taxAmount = round($subtotal * $taxRate, 2);
             $total     = $subtotal + $taxAmount;
 
