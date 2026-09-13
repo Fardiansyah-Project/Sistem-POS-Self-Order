@@ -7,6 +7,7 @@ const CheckoutPage = () => {
     const { items, getTotalPrice, clearCart } = useCart();
     const { submitOrder, isSubmitting, error } = useOrder();
     const navigate = useNavigate();
+    const orderHistoryKey = 'koriro_order_history';
 
     const [formData, setFormData] = useState({
         customer_name: '',
@@ -46,6 +47,11 @@ const CheckoutPage = () => {
         try {
             const result = await submitOrder(payload);
             clearCart();
+            const orderHistory = JSON.parse(localStorage.getItem(orderHistoryKey) || '[]');
+            localStorage.setItem(
+                orderHistoryKey,
+                JSON.stringify([result.order_code, ...orderHistory.filter(code => code !== result.order_code)])
+            );
             // Redirect ke halaman payment dengan bawa snap_token
             navigate(`/payment/${result.order_code}`, {
                 state: { snapToken: result.snap_token }

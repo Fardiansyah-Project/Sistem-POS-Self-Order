@@ -29,6 +29,7 @@ Route::prefix('v1')->group(function () {
 
     // Self-order (customer membuat pesanan tanpa perlu login)
     Route::post('orders', [OrderController::class, 'store']);
+    Route::post('orders/{order_code}/payment-token', [OrderController::class, 'paymentToken']);
 
     // Status pesanan (untuk polling oleh React)
     Route::get('orders/{order_code}/status', [OrderStatusController::class, 'show']);

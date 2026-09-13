@@ -1,10 +1,14 @@
-import React, { useEffect } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import React, { useEffect, useState } from 'react';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import useOrder from '../hooks/useOrder';
+import { createPaymentToken } from '../services/api';
 
 const OrderStatusPage = () => {
     const { orderCode } = useParams();
+    const navigate = useNavigate();
     const { orderStatus, startPolling, stopPolling } = useOrder();
+    const [isPaying, setIsPaying] = useState(false);
+    const [paymentError, setPaymentError] = useState(null);
 
     useEffect(() => {
         // Mulai polling status tiap 3 detik
@@ -82,6 +86,22 @@ const OrderStatusPage = () => {
         );
     };
 
+    const handlePayOrder = async () => {
+        setIsPaying(true);
+        setPaymentError(null);
+
+        try {
+            const response = await createPaymentToken(orderCode);
+            navigate(`/payment/${orderCode}`, {
+                state: { snapToken: response.data.snap_token },
+            });
+        } catch (error) {
+            setPaymentError(error.response?.data?.message || 'Gagal membuka pembayaran. Coba lagi.');
+        } finally {
+            setIsPaying(false);
+        }
+    };
+
     return (
         <div className="page-enter-active max-w-2xl mx-auto pb-10">
             {/* Kartu Status Utama */}
@@ -138,6 +158,22 @@ const OrderStatusPage = () => {
             </div>
 
             <div className="text-center">
+                {payment_status === 'pending' && (
+                    <>
+                        {paymentError && (
+                            <p className="text-sm text-red-400 mb-3">{paymentError}</p>
+                        )}
+                        <button
+                            type="button"
+                            onClick={handlePayOrder}
+                            disabled={isPaying}
+                            className="w-full sm:w-auto inline-block py-3 px-6 bg-brand rounded-xl text-white font-medium hover:bg-brand-dk transition-colors disabled:opacity-60 disabled:cursor-not-allowed mb-3"
+                        >
+                            {isPaying ? 'Membuka Pembayaran...' : 'Bayar Pesanan'}
+                        </button>
+
+                    </>
+                )}
                 <Link to="/menu" className="inline-block py-3 px-6 bg-surface border border-subtle rounded-xl text-white font-medium hover:bg-card transition-colors">
                     Pesan Lagi
                 </Link>

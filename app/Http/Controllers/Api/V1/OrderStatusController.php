@@ -4,10 +4,13 @@ namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
 use App\Models\Transaction;
+use App\Services\MidtransService;
 use Illuminate\Http\JsonResponse;
 
 class OrderStatusController extends Controller
 {
+    public function __construct(private readonly MidtransService $midtrans) {}
+
     /**
      * GET /api/v1/orders/{order_code}/status
      * Cek status pembayaran dan status pesanan (untuk polling dari React).
@@ -18,6 +21,11 @@ class OrderStatusController extends Controller
             ->with('details:id,transaction_id,product_name,quantity,unit_price,subtotal')
             ->select('id', 'order_code', 'customer_name', 'table_number', 'total_amount', 'payment_status', 'order_status', 'payment_type', 'paid_at', 'created_at')
             ->firstOrFail();
+
+        if ($transaction->payment_status === 'pending') {
+            $this->midtrans->syncTransactionStatus($transaction);
+            $transaction->refresh();
+        }
 
         return response()->json([
             'data' => [

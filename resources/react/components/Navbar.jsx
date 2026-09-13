@@ -20,6 +20,10 @@ const Navbar = () => {
                         </span>
                     </Link>
 
+                    <Link to="/orders" className="text-sm text-muted hover:text-brand transition-colors">
+                        Orders
+                    </Link>
+
                     {/* Cart Button */}
                     <button
                         onClick={toggleCart}

@@ -102,4 +102,26 @@ class OrderController extends Controller
             ], 201);
         });
     }
+
+    /**
+     * POST /api/v1/orders/{order_code}/payment-token
+     * Buat token Snap baru untuk pesanan yang belum dibayar.
+     */
+    public function paymentToken(string $orderCode): JsonResponse
+    {
+        $transaction = Transaction::where('order_code', $orderCode)
+            ->with('details')
+            ->firstOrFail();
+
+        if ($transaction->payment_status !== 'pending') {
+            return response()->json([
+                'message' => 'Pesanan ini tidak dapat dibayar ulang.',
+            ], 422);
+        }
+
+        return response()->json([
+            'order_code' => $transaction->order_code,
+            'snap_token' => $this->midtrans->createSnapToken($transaction),
+        ]);
+    }
 }

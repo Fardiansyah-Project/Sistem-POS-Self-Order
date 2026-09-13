@@ -4,6 +4,7 @@ import MenuPage from './pages/MenuPage';
 import CheckoutPage from './pages/CheckoutPage';
 import PaymentPage from './pages/PaymentPage';
 import OrderStatusPage from './pages/OrderStatusPage';
+import OrdersPage from './pages/OrdersPage';
 import Navbar from './components/Navbar';
 import CartDrawer from './components/CartDrawer';
 
@@ -21,6 +22,7 @@ const App = () => {
                     <Route path="/checkout" element={<CheckoutPage />} />
                     <Route path="/payment/:orderCode" element={<PaymentPage />} />
                     <Route path="/order/:orderCode" element={<OrderStatusPage />} />
+                    <Route path="/orders" element={<OrdersPage />} />
                     <Route path="*" element={<Navigate to="/menu" replace />} />
                 </Routes>
             </main>

@@ -12,8 +12,8 @@ const PaymentPage = () => {
 
     useEffect(() => {
         if (!snapToken) {
-            // Jika masuk ke halaman ini langsung via URL tanpa token, lempar ke menu
-            navigate('/menu', { replace: true });
+            // Pertahankan akses ke histori order jika halaman dibuka ulang.
+            navigate(`/order/${orderCode}`, { replace: true });
             return;
         }
 
@@ -38,8 +38,8 @@ const PaymentPage = () => {
                     setPaymentStatus('error');
                 },
                 onClose: function() {
-                    // User menutup popup sebelum bayar
-                    setPaymentStatus('closed');
+                    // Histori order tetap menjadi tempat untuk melanjutkan pembayaran.
+                    navigate(`/order/${orderCode}`, { replace: true });
                 }
             });
         } else {

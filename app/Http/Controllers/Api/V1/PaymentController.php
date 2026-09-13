@@ -26,8 +26,11 @@ class PaymentController extends Controller
 
         try {
             $result = $this->midtrans->handleWebhook($payload);
-        } catch (\Exception $e) {
-            Log::error('Midtrans webhook error: ' . $e->getMessage());
+        } catch (\Throwable $e) {
+            Log::error('Midtrans webhook ditolak', [
+                'message' => $e->getMessage(),
+                'payload' => $payload,
+            ]);
             return response()->json(['message' => 'Invalid signature.'], 403);
         }
 

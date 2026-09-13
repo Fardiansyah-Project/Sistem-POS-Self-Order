@@ -46,6 +46,10 @@ export const getProducts = (categorySlug = null) =>
  */
 export const createOrder = (orderData) => api.post('/orders', orderData);
 
+/** Buat token pembayaran baru untuk pesanan yang masih pending */
+export const createPaymentToken = (orderCode) =>
+    api.post(`/orders/${orderCode}/payment-token`);
+
 /**
  * Cek status pesanan (untuk polling)
  * @param {string} orderCode - Kode pesanan, e.g. KRC-20240912-0001
