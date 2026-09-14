@@ -9,11 +9,16 @@ const useCart = create(
         (set, get) => ({
             items: [],    // [{id, name, price, image_url, quantity, notes}]
             isOpen: false,
+            toast: null,
 
             /** Tambah produk ke cart. Jika sudah ada, increment quantity. */
             addItem: (product) => {
                 set((state) => {
                     const existing = state.items.find((i) => i.id === product.id);
+                    const toast = {
+                        id: Date.now(),
+                        productName: product.name,
+                    };
                     if (existing) {
                         return {
                             items: state.items.map((i) =>
@@ -21,13 +26,17 @@ const useCart = create(
                                     ? { ...i, quantity: i.quantity + 1 }
                                     : i
                             ),
+                            toast,
                         };
                     }
                     return {
                         items: [...state.items, { ...product, quantity: 1, notes: '' }],
+                        toast,
                     };
                 });
             },
+
+            clearToast: () => set({ toast: null }),
 
             /** Kurangi quantity. Jika menjadi 0, hapus dari cart. */
             decrementItem: (productId) => {

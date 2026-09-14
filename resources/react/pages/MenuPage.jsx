@@ -2,6 +2,8 @@ import React from 'react';
 import useProducts from '../hooks/useProducts';
 import CategoryTabs from '../components/CategoryTabs';
 import ProductCard from '../components/ProductCard';
+import '../index.css';
+import bgHero from '../../assets/hero-bg.jpg';
 
 const MenuPage = () => {
     const {
@@ -16,7 +18,9 @@ const MenuPage = () => {
     return (
         <div className="page-enter-active">
             {/* Header Banner */}
-            <div className="mb-8 p-6 rounded-3xl bg-gradient-to-r from-card to-surface border border-subtle overflow-hidden relative">
+            <div
+                className="bg-hero flex items-center mb-8 min-h-[300px] sm:min-h-[320px] p-6 sm:p-12 rounded-2xl border border-transparent overflow-hidden relative bg-center bg-cover"
+            >
                 <div className="relative z-10">
                     <h1 className="text-3xl sm:text-4xl font-bold mb-2 text-white">
                         Pesan <span className="text-brand">Kopi</span><br />
@@ -26,8 +30,6 @@ const MenuPage = () => {
                         Pilih menu favoritmu, bayar via QRIS, dan ambil pesananmu saat sudah siap.
                     </p>
                 </div>
-                {/* Decorative circle */}
-                <div className="absolute -right-12 -top-12 w-48 h-48 bg-brand/20 rounded-full blur-3xl"></div>
             </div>
 
             {/* Category Filter */}

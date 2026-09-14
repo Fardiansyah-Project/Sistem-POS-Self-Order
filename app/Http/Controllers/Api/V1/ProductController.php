@@ -40,10 +40,8 @@ class ProductController extends Controller
         return response()->json(['data' => $products]);
     }
 
-    /**
-     * GET /api/v1/products/{slug}
-     * Ambil detail satu produk termasuk resep bahan baku.
-     */
+
+    //  Ambil detail satu produk termasuk resep bahan baku.
     public function show(string $slug): JsonResponse
     {
         $product = Product::available()

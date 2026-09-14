@@ -21,7 +21,7 @@ const Navbar = () => {
                             K
                         </div>
                         <span className="font-bold text-xl tracking-tight gradient-text">
-                            Koriro
+                            Koriru
                         </span>
                     </Link>
 

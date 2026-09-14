@@ -14,6 +14,7 @@
             min-height: 100vh;
             display: flex;
             align-items: center;
+            box-sizing: border-box;
         }
         .login-card {
             background: rgba(35, 28, 23, 0.9);

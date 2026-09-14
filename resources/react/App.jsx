@@ -7,6 +7,7 @@ import OrderStatusPage from './pages/OrderStatusPage';
 import OrdersPage from './pages/OrdersPage';
 import Navbar from './components/Navbar';
 import CartDrawer from './components/CartDrawer';
+import CartToast from './components/CartToast';
 
 const App = () => {
     return (
@@ -29,6 +30,7 @@ const App = () => {
 
             {/* Cart Drawer Overlay */}
             <CartDrawer />
+            <CartToast />
         </div>
     );
 };
