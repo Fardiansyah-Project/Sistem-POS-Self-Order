@@ -26,9 +26,7 @@ class KitchenController extends Controller
         return view('admin.kitchen.index', compact('activeOrders'));
     }
 
-    /**
-     * Update status operasional dapur untuk pesanan tertentu.
-     */
+
     public function updateStatus(Request $request, Transaction $transaction)
     {
         $request->validate([

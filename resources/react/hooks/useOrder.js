@@ -10,6 +10,7 @@ const useOrder = () => {
     const [orderStatus, setOrderStatus]   = useState(null);
     const [error, setError]               = useState(null);
     const pollingRef                      = useRef(null);
+    const paidNotifiedRef                 = useRef(false);
 
     /**
      * Submit pesanan ke API Laravel.
@@ -35,31 +36,38 @@ const useOrder = () => {
 
     /**
      * Mulai polling status pesanan setiap 3 detik.
-     * Berhenti otomatis ketika payment_status = paid/failed/cancelled/expired.
+     * Polling tetap berjalan setelah pembayaran lunas agar perubahan status
+     * dari monitor dapur diterima oleh halaman pelanggan.
      *
      * @param {string}   orderCode  - Kode pesanan
      * @param {Function} onPaid     - Callback ketika pembayaran berhasil
      */
     const startPolling = useCallback((orderCode, onPaid) => {
         stopPolling();
+        paidNotifiedRef.current = false;
 
-        pollingRef.current = setInterval(async () => {
+        const fetchStatus = async () => {
             try {
                 const res    = await getOrderStatus(orderCode);
                 const status = res.data.data;
                 setOrderStatus(status);
 
-                const terminalStatuses = ['paid', 'failed', 'cancelled', 'expired'];
-                if (terminalStatuses.includes(status.payment_status)) {
+                const paymentFailed = ['failed', 'cancelled', 'expired'].includes(status.payment_status);
+                const orderCompleted = status.order_status === 'completed';
+
+                if (paymentFailed || orderCompleted) {
                     stopPolling();
-                    if (status.payment_status === 'paid' && onPaid) {
-                        onPaid(status);
-                    }
+                } else if (status.payment_status === 'paid' && onPaid && !paidNotifiedRef.current) {
+                    paidNotifiedRef.current = true;
+                    onPaid(status);
                 }
             } catch {
                 // Abaikan error polling — coba lagi di interval berikutnya
             }
-        }, 3000);
+        };
+
+        pollingRef.current = setInterval(fetchStatus, 3000);
+        fetchStatus();
     }, []);
 
     /** Hentikan polling */

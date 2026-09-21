@@ -31,7 +31,15 @@ export default defineConfig({
         },
 
         hmr: {
-            host: 'localhost',
+            host: "localhost", 
+            port: 5173,
+            strictPort: true,
+            cors: true,
+            allowedHosts: ["stark-recede-dilute.ngrok-free.dev"],
+            hmr: {
+                host: "stark-recede-dilute.ngrok-free.dev", 
+                clientPort: 443, 
+            },
         },
     },
 });
