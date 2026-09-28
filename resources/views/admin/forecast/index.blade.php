@@ -96,14 +96,10 @@
     new Chart(ctx, {
         type: 'line',
         data: {
-            labels: {
-                !!json_encode($chartData['labels']) !!
-            },
+            labels: {!! json_encode($chartData['labels']) !!},
             datasets: [{
                     label: 'Penggunaan Aktual',
-                    data: {
-                        !!json_encode($chartData['actuals']) !!
-                    },
+                    data: {!! json_encode($chartData['actuals']) !!},
                     borderColor: '#4361ee',
                     backgroundColor: '#4361ee',
                     borderWidth: 2,
@@ -113,9 +109,7 @@
                 },
                 {
                     label: 'Hasil Peramalan (WMA)',
-                    data: {
-                        !!json_encode($chartData['forecasts']) !!
-                    },
+                    data: {!! json_encode($chartData['forecasts']) !!},
                     borderColor: '#c97d20',
                     backgroundColor: '#c97d20',
                     borderWidth: 3,
