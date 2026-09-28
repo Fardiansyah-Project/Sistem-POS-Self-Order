@@ -6,6 +6,7 @@ use App\Models\Transaction;
 use Midtrans\Config as MidtransConfig;
 use Midtrans\Snap;
 use Midtrans\Transaction as MidtransTransaction;
+use Illuminate\Support\Facades\Log;
 use Midtrans\Notification;
 
 /**
@@ -26,16 +27,24 @@ class MidtransService
 
     /**
      * Buat Snap Token untuk pembayaran baru.
+     * Jika ini adalah retry, gunakan order_id unik dengan suffix -R{N}.
      *
      * @param  Transaction $transaction  Data transaksi yang sudah tersimpan di DB
-     * @return string                   Snap token untuk digunakan di frontend
-     * @throws \Exception               Jika Midtrans API error
+     * @param  int|null    $retrySuffix  Nomor retry (null = pertama kali)
+     * @return string                    Snap token untuk digunakan di frontend
+     * @throws \Exception                Jika Midtrans API error
      */
-    public function createSnapToken(Transaction $transaction): string
+    public function createSnapToken(Transaction $transaction, ?int $retrySuffix = null): string
     {
+        // Gunakan order_id unik: order_code asli untuk percobaan pertama,
+        // order_code-R{N} untuk retry ke-N.
+        $orderId = $retrySuffix
+            ? $transaction->order_code . '-R' . $retrySuffix
+            : $transaction->order_code;
+
         $params = [
             'transaction_details' => [
-                'order_id'     => $transaction->order_code,
+                'order_id'     => $orderId,
                 'gross_amount' => (int) $transaction->total_amount,
             ],
             'customer_details' => [
@@ -73,12 +82,38 @@ class MidtransService
     }
 
     /**
+     * Cancel transaksi yang masih pending di Midtrans.
+     * Digunakan sebelum membuat Snap token baru pada retry pembayaran.
+     *
+     * @param string $orderId  Order ID di Midtrans (bisa berisi suffix -R{N})
+     */
+    public function cancelTransaction(string $orderId): void
+    {
+        try {
+            MidtransTransaction::cancel($orderId);
+            Log::info('Midtrans transaction cancelled', ['order_id' => $orderId]);
+        } catch (\Throwable $e) {
+            // Abaikan error — transaksi mungkin sudah expired/cancelled di Midtrans
+            Log::warning('Midtrans cancel failed (mungkin sudah expired)', [
+                'order_id' => $orderId,
+                'message'  => $e->getMessage(),
+            ]);
+        }
+    }
+
+    /**
      * Sinkronkan status transaksi dari Midtrans jika webhook terlambat atau gagal.
+     * Mencoba order_id terbaru (dengan suffix retry) terlebih dahulu.
      */
     public function syncTransactionStatus(Transaction $transaction): ?string
     {
         try {
-            $midtransStatus = MidtransTransaction::status($transaction->order_code);
+            // Coba dengan order_id terbaru (yang mungkin memiliki suffix retry)
+            $orderId = $transaction->midtrans_retry_count > 0
+                ? $transaction->order_code . '-R' . $transaction->midtrans_retry_count
+                : $transaction->order_code;
+
+            $midtransStatus = MidtransTransaction::status($orderId);
             $transactionStatus = $midtransStatus->transaction_status ?? null;
             $fraudStatus = $midtransStatus->fraud_status ?? null;
 

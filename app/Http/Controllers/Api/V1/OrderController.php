@@ -106,6 +106,7 @@ class OrderController extends Controller
     /**
      * POST /api/v1/orders/{order_code}/payment-token
      * Buat token Snap baru untuk pesanan yang belum dibayar.
+     * Cancel transaksi lama di Midtrans untuk menghindari error "order_id has already been taken".
      */
     public function paymentToken(string $orderCode): JsonResponse
     {
@@ -119,9 +120,24 @@ class OrderController extends Controller
             ], 422);
         }
 
+        // Tentukan order_id Midtrans sebelumnya yang perlu di-cancel
+        $previousOrderId = $transaction->midtrans_retry_count > 0
+            ? $transaction->order_code . '-R' . $transaction->midtrans_retry_count
+            : $transaction->order_code;
+
+        // Cancel transaksi lama di Midtrans (abaikan error jika sudah expired)
+        $this->midtrans->cancelTransaction($previousOrderId);
+
+        // Increment retry counter
+        $newRetryCount = $transaction->midtrans_retry_count + 1;
+        $transaction->update(['midtrans_retry_count' => $newRetryCount]);
+
+        // Buat Snap token baru dengan order_id unik
+        $snapToken = $this->midtrans->createSnapToken($transaction, $newRetryCount);
+
         return response()->json([
             'order_code' => $transaction->order_code,
-            'snap_token' => $this->midtrans->createSnapToken($transaction),
+            'snap_token' => $snapToken,
         ]);
     }
 }

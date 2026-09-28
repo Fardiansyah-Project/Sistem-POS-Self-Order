@@ -39,7 +39,9 @@ class PaymentController extends Controller
         }
 
         // Cari transaksi berdasarkan order_code
-        $transaction = Transaction::where('order_code', $result['order_code'])->first();
+        // Strip suffix -R{N} dari order_id Midtrans (digunakan untuk retry pembayaran)
+        $orderCode = preg_replace('/-R\d+$/', '', $result['order_code']);
+        $transaction = Transaction::where('order_code', $orderCode)->first();
 
         if (! $transaction) {
             Log::warning('Midtrans webhook: order tidak ditemukan', ['order_code' => $result['order_code']]);
@@ -54,8 +56,8 @@ class PaymentController extends Controller
         ];
 
         if ($result['payment_status'] === 'paid') {
-            $updateData['paid_at']      = now();
-            $updateData['order_status'] = 'processing'; // otomatis pindah ke dapur
+            $updateData['paid_at']      = now('Asia/Makassar');
+            $updateData['order_status'] = 'processing';
         }
 
         $transaction->update($updateData);

@@ -25,6 +25,7 @@ class Transaction extends Model
         'payment_type',
         'paid_at',
         'stock_deducted_at',
+        'midtrans_retry_count',
     ];
 
     protected $casts = [
@@ -44,9 +45,9 @@ class Transaction extends Model
     // Generate order code unik: KRC-YYYYMMDD-XXXX
     public static function generateOrderCode(): string
     {
-        $date  = now()->format('Ymd');
-        $count = static::whereDate('created_at', today())->count() + 1;
-        return sprintf('KRC-%s-%04d', $date, $count);
+        $date = now()->format('Ymd');
+        $random = strtoupper(\Illuminate\Support\Str::random(4));
+        return sprintf('KRC-%s-%s', $date, $random);
     }
 
     // Scope: pesanan hari ini

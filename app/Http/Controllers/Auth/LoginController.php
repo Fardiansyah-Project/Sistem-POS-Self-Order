@@ -31,7 +31,7 @@ class LoginController extends Controller
 
             // Hanya Admin atau Kasir yang boleh login ke dashboard
             if (in_array(Auth::user()->role, ['admin', 'kasir'])) {
-                return redirect()->intended('/admin/dashboard');
+                return redirect()->intended('/cms/admin/dashboard');
             }
 
             // Jika bukan admin/kasir (misal user biasa), logout paksa
