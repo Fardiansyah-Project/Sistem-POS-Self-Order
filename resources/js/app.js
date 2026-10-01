@@ -1,4 +1,10 @@
 import $ from 'jquery';
+// import './bootstrap';
+import Chart from 'chart.js/auto';
+
+// Membuat Chart.js bisa diakses secara global (opsional)
+window.Chart = Chart;
+
 window.$ = window.jQuery = $;
 
 const adminScriptsTemplate = document.querySelector('#admin-page-scripts');
