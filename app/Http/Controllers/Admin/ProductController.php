@@ -3,27 +3,47 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\Category;
 use App\Models\Product;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
 class ProductController extends Controller
 {
-    public function index()
+    /**
+     * GET /cms/admin/api/products
+     */
+    public function index(Request $request): JsonResponse
     {
         $products = Product::with('category')->orderBy('category_id')->orderBy('sort_order')->paginate(15);
-        return view('admin.products.index', compact('products'));
+        
+        // Append image URL to each product for frontend
+        $products->getCollection()->transform(function ($product) {
+            $product->image_url = $product->image ? Storage::url($product->image) : null;
+            return $product;
+        });
+
+        return response()->json($products);
     }
 
-    public function create()
+    /**
+     * GET /cms/admin/api/products/{product}
+     */
+    public function show(Product $product): JsonResponse
     {
-        $categories = Category::where('is_active', true)->orderBy('sort_order')->get();
-        return view('admin.products.create', compact('categories'));
+        $product->load('category');
+        $product->image_url = $product->image ? Storage::url($product->image) : null;
+        
+        return response()->json([
+            'data' => $product
+        ]);
     }
 
-    public function store(Request $request)
+    /**
+     * POST /cms/admin/api/products
+     */
+    public function store(Request $request): JsonResponse
     {
         $validated = $request->validate([
             'category_id'  => 'required|exists:categories,id',
@@ -41,17 +61,20 @@ class ProductController extends Controller
             $validated['image'] = $request->file('image')->store('products', 'public');
         }
 
-        Product::create($validated);
-        return redirect()->route('admin.products.index')->with('success', 'Produk menu berhasil ditambahkan.');
+        $product = Product::create($validated);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Produk menu berhasil ditambahkan.',
+            'data'    => $product
+        ], 201);
     }
 
-    public function edit(Product $product)
-    {
-        $categories = Category::where('is_active', true)->orderBy('sort_order')->get();
-        return view('admin.products.edit', compact('product', 'categories'));
-    }
-
-    public function update(Request $request, Product $product)
+    /**
+     * POST /cms/admin/api/products/{product}
+     * Note: using POST for update to support multipart/form-data for file uploads
+     */
+    public function update(Request $request, Product $product): JsonResponse
     {
         $validated = $request->validate([
             'category_id'  => 'required|exists:categories,id',
@@ -78,18 +101,38 @@ class ProductController extends Controller
         }
 
         $product->update($validated);
-        return redirect()->route('admin.products.index')->with('success', 'Data produk menu berhasil diperbarui.');
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Data produk menu berhasil diperbarui.',
+            'data'    => $product->fresh()
+        ]);
     }
 
-    public function destroy(Product $product)
+    /**
+     * DELETE /cms/admin/api/products/{product}
+     */
+    public function destroy(Product $product): JsonResponse
     {
         try {
             // Hapus resep yang terkait terlebih dahulu
             $product->ingredients()->detach();
+            
+            if ($product->image && ! Str::startsWith($product->image, ['http://', 'https://'])) {
+                Storage::disk('public')->delete($product->image);
+            }
+            
             $product->delete();
-            return redirect()->route('admin.products.index')->with('success', 'Produk berhasil dihapus.');
+            
+            return response()->json([
+                'success' => true,
+                'message' => 'Produk berhasil dihapus.'
+            ]);
         } catch (\Exception $e) {
-            return redirect()->route('admin.products.index')->with('error', 'Gagal menghapus! Produk mungkin terikat pada transaksi historis.');
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal menghapus! Produk mungkin terikat pada transaksi historis.'
+            ], 422);
         }
     }
 }

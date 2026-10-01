@@ -7,6 +7,7 @@ use App\Models\Category;
 use App\Models\Product;
 use App\Models\Transaction;
 use App\Services\StockService;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -15,27 +16,37 @@ class PosController extends Controller
     public function __construct(private readonly StockService $stock) {}
 
     /**
-     * Menampilkan antarmuka Kasir POS.
+     * GET /cms/admin/api/pos/products
+     * Ambil produk untuk POS, bisa difilter by category
      */
-    public function index(Request $request)
+    public function products(Request $request): JsonResponse
     {
         $categories = Category::where('is_active', true)->orderBy('sort_order')->get();
-        
+
         $query = Product::with('category')->where('is_available', true);
         if ($request->filled('category')) {
             $query->whereHas('category', function ($q) use ($request) {
                 $q->where('id', $request->category);
             });
         }
-        $products = $query->orderBy('sort_order')->get();
+        $products = $query->orderBy('sort_order')->get()->map(function ($product) {
+            $product->image_url = $product->image ? \Illuminate\Support\Facades\Storage::url($product->image) : null;
+            return $product;
+        });
 
-        return view('admin.pos.index', compact('categories', 'products'));
+        return response()->json([
+            'data' => [
+                'categories' => $categories,
+                'products'   => $products,
+            ]
+        ]);
     }
 
     /**
+     * POST /cms/admin/api/pos/store
      * Menyimpan pesanan dari POS.
      */
-    public function store(Request $request)
+    public function store(Request $request): JsonResponse
     {
         $validated = $request->validate([
             'customer_name' => 'required|string|max:150',
@@ -47,13 +58,16 @@ class PosController extends Controller
         ]);
 
         $items = json_decode($validated['items'], true);
-        
+
         if (empty($items) || !is_array($items)) {
-            return back()->with('error', 'Keranjang belanja kosong atau format tidak valid.');
+            return response()->json([
+                'success' => false,
+                'message' => 'Keranjang belanja kosong atau format tidak valid.'
+            ], 422);
         }
 
         try {
-            DB::transaction(function () use ($validated, $items) {
+            $transactionData = DB::transaction(function () use ($validated, $items) {
                 $subtotal = 0;
                 $details = [];
 
@@ -103,14 +117,22 @@ class PosController extends Controller
 
                 // Potong stok
                 $this->stock->deductForTransaction($transaction);
-                
-                // Simpan id order_code untuk mencetak struk
-                session()->flash('print_receipt_id', $transaction->id);
+
+                return $transaction->load('details');
             });
 
-            return redirect()->route('admin.pos.index')->with('success', 'Pesanan berhasil dibuat dan lunas.');
+            return response()->json([
+                'success' => true,
+                'message' => 'Pesanan berhasil dibuat dan lunas.',
+                'data'    => [
+                    'transaction' => $transactionData
+                ]
+            ], 201);
         } catch (\Exception $e) {
-            return back()->with('error', 'Terjadi kesalahan: ' . $e->getMessage())->withInput();
+            return response()->json([
+                'success' => false,
+                'message' => 'Terjadi kesalahan: ' . $e->getMessage()
+            ], 500);
         }
     }
 }

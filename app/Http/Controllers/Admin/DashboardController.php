@@ -7,12 +7,16 @@ use App\Models\Transaction;
 use App\Models\Ingredient;
 use App\Models\Product;
 use Carbon\Carbon;
-use Illuminate\Http\Request;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
 
 class DashboardController extends Controller
 {
-    public function index()
+    /**
+     * GET /cms/admin/api/dashboard
+     * Mengembalikan data ringkasan dashboard dalam format JSON.
+     */
+    public function data(): JsonResponse
     {
         $today = Carbon::today();
 
@@ -35,7 +39,7 @@ class DashboardController extends Controller
             ->get();
 
         // 4. Data Grafik Penjualan 7 Hari Terakhir
-        $salesData = [];
+        $salesData = ['labels' => [], 'data' => []];
         for ($i = 6; $i >= 0; $i--) {
             $date = Carbon::today()->subDays($i);
             $total = Transaction::whereDate('created_at', $date)
@@ -46,12 +50,14 @@ class DashboardController extends Controller
             $salesData['data'][] = $total;
         }
 
-        return view('admin.dashboard', compact(
-            'ordersToday', 
-            'revenueToday', 
-            'criticalIngredients', 
-            'topProducts',
-            'salesData'
-        ));
+        return response()->json([
+            'data' => [
+                'orders_today'         => $ordersToday,
+                'revenue_today'        => $revenueToday,
+                'critical_ingredients' => $criticalIngredients,
+                'top_products'         => $topProducts,
+                'sales_chart'          => $salesData,
+            ],
+        ]);
     }
 }

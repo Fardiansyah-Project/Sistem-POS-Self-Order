@@ -4,82 +4,106 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Transaction;
-use App\Services\MidtransService;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 class TransactionController extends Controller
 {
-    public function __construct(private readonly MidtransService $midtrans) {}
-
     /**
-     * Menampilkan daftar semua transaksi.
+     * GET /cms/admin/api/transactions
+     * List transaksi dengan pencarian & filter
      */
-    public function index(Request $request)
+    public function index(Request $request): JsonResponse
     {
-        $query = Transaction::with('details')
-            ->orderBy('created_at', 'desc');
+        $query = Transaction::query();
 
-        // Filter berdasarkan status pembayaran jika ada
+        // Pencarian (Kode, Nama, atau Meja)
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function ($q) use ($search) {
+                $q->where('order_code', 'like', "%{$search}%")
+                  ->orWhere('customer_name', 'like', "%{$search}%")
+                  ->orWhere('table_number', 'like', "%{$search}%");
+            });
+        }
+
+        // Filter Status Pembayaran
         if ($request->filled('payment_status')) {
             $query->where('payment_status', $request->payment_status);
         }
+        
+        // Filter Status Order
+        if ($request->filled('order_status')) {
+            $query->where('order_status', $request->order_status);
+        }
 
-        // Tampilkan 15 data per halaman
-        $transactions = $query->paginate(15);
+        // Filter Tanggal
+        if ($request->filled('date')) {
+            $query->whereDate('created_at', $request->date);
+        }
 
-        return view('admin.transactions.index', compact('transactions'));
+        // Sorting
+        $query->orderBy('created_at', 'desc');
+
+        return response()->json(
+            $query->paginate(20)
+        );
     }
 
     /**
-     * Hapus transaksi yang dipilih secara massal (bulk delete).
+     * GET /cms/admin/api/transactions/{transaction}
+     * Detail transaksi
      */
-    public function bulkDestroy(Request $request)
+    public function show(Transaction $transaction): JsonResponse
     {
-        $validated = $request->validate([
-            'ids'   => ['required', 'array', 'min:1'],
-            'ids.*' => ['integer', 'exists:transactions,id'],
+        $transaction->load('details');
+        return response()->json([
+            'data' => $transaction
         ]);
-
-        $transactions = Transaction::whereIn('id', $validated['ids'])->get();
-
-        foreach ($transactions as $transaction) {
-            // Hapus detail item terlebih dahulu, lalu transaksi
-            $transaction->details()->delete();
-            $transaction->delete();
-        }
-
-        return redirect()
-            ->route('admin.transactions.index')
-            ->with('success', count($validated['ids']) . ' transaksi berhasil dihapus.');
     }
 
     /**
-     * Batalkan pesanan yang masih pending.
-     * Juga cancel di Midtrans jika transaksi sudah pernah dibuat.
+     * PATCH /cms/admin/api/transactions/{transaction}/cancel
+     * Batalkan transaksi & kembalikan stok jika perlu
      */
-    public function cancel(Transaction $transaction)
+    public function cancel(Transaction $transaction): JsonResponse
     {
-        if ($transaction->payment_status !== 'pending') {
-            return redirect()
-                ->route('admin.transactions.index')
-                ->with('error', 'Hanya pesanan dengan status pending yang dapat dibatalkan.');
+        if ($transaction->order_status === 'completed' || $transaction->order_status === 'cancelled') {
+            return response()->json([
+                'success' => false,
+                'message' => 'Transaksi tidak dapat dibatalkan.'
+            ], 422);
         }
 
-        // Cancel di Midtrans (order_id terbaru, bisa dengan suffix retry)
-        $orderId = $transaction->midtrans_retry_count > 0
-            ? $transaction->order_code . '-R' . $transaction->midtrans_retry_count
-            : $transaction->order_code;
-
-        $this->midtrans->cancelTransaction($orderId);
-
-        // Update status di database
         $transaction->update([
-            'payment_status' => 'cancelled',
-            'order_status'   => 'cancelled',
+            'order_status' => 'cancelled'
         ]);
 
-        return redirect()
-            ->route('admin.transactions.index')
-            ->with('success', "Pesanan {$transaction->order_code} berhasil dibatalkan.");
+        // (Opsional) Kembalikan stok bahan baku jika pesanan dibatalkan tapi sudah terpotong
+        // Implementasikan logika pengembalian stok melalui StockService jika diperlukan.
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Transaksi berhasil dibatalkan.'
+        ]);
+    }
+
+    /**
+     * DELETE /cms/admin/api/transactions/bulk-destroy
+     * Hapus banyak transaksi (Bulk Delete)
+     */
+    public function bulkDestroy(Request $request): JsonResponse
+    {
+        $request->validate([
+            'ids'   => 'required|array',
+            'ids.*' => 'exists:transactions,id',
+        ]);
+
+        Transaction::whereIn('id', $request->ids)->delete();
+
+        return response()->json([
+            'success' => true,
+            'message' => count($request->ids) . ' transaksi berhasil dihapus.'
+        ]);
     }
 }

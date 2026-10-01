@@ -4,22 +4,48 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Ingredient;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 class IngredientController extends Controller
 {
-    public function index()
+    /**
+     * GET /cms/admin/api/ingredients?page=1&all=true
+     * Ambil daftar bahan baku. Support pagination dan mode all (untuk dropdown).
+     */
+    public function index(Request $request): JsonResponse
     {
-        $ingredients = Ingredient::orderBy('name')->paginate(15);
-        return view('admin.ingredients.index', compact('ingredients'));
+        $query = Ingredient::orderBy('name');
+
+        // Jika parameter all=true, kembalikan semua tanpa pagination (untuk dropdown select)
+        if ($request->boolean('all')) {
+            return response()->json([
+                'data' => $query->get(),
+            ]);
+        }
+
+        // Default: paginated
+        $ingredients = $query->paginate(15);
+
+        return response()->json($ingredients);
     }
 
-    public function create()
+    /**
+     * GET /cms/admin/api/ingredients/{ingredient}
+     * Ambil detail satu bahan baku (untuk form edit).
+     */
+    public function show(Ingredient $ingredient): JsonResponse
     {
-        return view('admin.ingredients.create');
+        return response()->json([
+            'data' => $ingredient,
+        ]);
     }
 
-    public function store(Request $request)
+    /**
+     * POST /cms/admin/api/ingredients
+     * Simpan bahan baku baru.
+     */
+    public function store(Request $request): JsonResponse
     {
         $validated = $request->validate([
             'name'           => 'required|string|max:100|unique:ingredients,name',
@@ -28,16 +54,20 @@ class IngredientController extends Controller
             'minimum_stock'  => 'required|numeric|min:0',
         ]);
 
-        Ingredient::create($validated);
-        return redirect()->route('admin.ingredients.index')->with('success', 'Bahan baku berhasil ditambahkan.');
+        $ingredient = Ingredient::create($validated);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Bahan baku berhasil ditambahkan.',
+            'data'    => $ingredient,
+        ], 201);
     }
 
-    public function edit(Ingredient $ingredient)
-    {
-        return view('admin.ingredients.edit', compact('ingredient'));
-    }
-
-    public function update(Request $request, Ingredient $ingredient)
+    /**
+     * PUT /cms/admin/api/ingredients/{ingredient}
+     * Perbarui data bahan baku.
+     */
+    public function update(Request $request, Ingredient $ingredient): JsonResponse
     {
         $validated = $request->validate([
             'name'           => 'required|string|max:100|unique:ingredients,name,' . $ingredient->id,
@@ -47,17 +77,33 @@ class IngredientController extends Controller
         ]);
 
         $ingredient->update($validated);
-        return redirect()->route('admin.ingredients.index')->with('success', 'Data bahan baku berhasil diperbarui.');
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Data bahan baku berhasil diperbarui.',
+            'data'    => $ingredient->fresh(),
+        ]);
     }
 
-    public function destroy(Ingredient $ingredient)
+    /**
+     * DELETE /cms/admin/api/ingredients/{ingredient}
+     * Hapus bahan baku.
+     */
+    public function destroy(Ingredient $ingredient): JsonResponse
     {
-        // Cegah hapus jika masih dipakai di resep (opsional, tergantung logic foreign key constraint)
+        // Cegah hapus jika masih dipakai di resep
         try {
             $ingredient->delete();
-            return redirect()->route('admin.ingredients.index')->with('success', 'Bahan baku berhasil dihapus.');
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Bahan baku berhasil dihapus.',
+            ]);
         } catch (\Exception $e) {
-            return redirect()->route('admin.ingredients.index')->with('error', 'Gagal menghapus bahan baku, mungkin masih terikat dengan resep produk.');
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal menghapus bahan baku, mungkin masih terikat dengan resep produk.',
+            ], 422);
         }
     }
 }

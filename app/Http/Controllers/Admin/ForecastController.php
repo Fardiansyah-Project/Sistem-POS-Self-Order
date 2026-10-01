@@ -6,15 +6,20 @@ use App\Http\Controllers\Controller;
 use App\Models\Ingredient;
 use App\Models\RawMaterialForecast;
 use App\Services\ForecastService;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 class ForecastController extends Controller
 {
     public function __construct(private readonly ForecastService $forecastService) {}
 
-    public function index(Request $request)
+    /**
+     * GET /cms/admin/api/forecast?ingredient_id=X
+     * Ambil data peramalan WMA untuk satu bahan baku.
+     */
+    public function data(Request $request): JsonResponse
     {
-        $ingredients = Ingredient::orderBy('name')->get();
+        $ingredients = Ingredient::orderBy('name')->get(['id', 'name', 'unit']);
         $selectedIngredientId = $request->get('ingredient_id', $ingredients->first()->id ?? null);
         
         $forecasts = [];
@@ -57,20 +62,31 @@ class ForecastController extends Controller
                 $actualPlot[] = null;
 
                 $chartData = [
-                    'labels' => $labels,
-                    'actuals' => $actualPlot,
-                    'forecasts' => $forecastPlot,
-                    'weights' => implode(', ', $weights),
-                    'mae' => $latest->mean_absolute_error,
-                    'next_forecast' => $latest->forecasted_amount
+                    'labels'        => $labels,
+                    'actuals'       => $actualPlot,
+                    'forecasts'     => $forecastPlot,
+                    'weights'       => implode(', ', $weights),
+                    'mae'           => $latest->mean_absolute_error,
+                    'next_forecast' => $latest->forecasted_amount,
                 ];
             }
         }
 
-        return view('admin.forecast.index', compact('ingredients', 'selectedIngredientId', 'forecasts', 'chartData'));
+        return response()->json([
+            'data' => [
+                'ingredients'            => $ingredients,
+                'selected_ingredient_id' => $selectedIngredientId,
+                'forecasts'              => $forecasts,
+                'chart_data'             => $chartData,
+            ],
+        ]);
     }
 
-    public function run(Request $request)
+    /**
+     * POST /cms/admin/api/forecast/run
+     * Jalankan peramalan WMA untuk semua bahan baku.
+     */
+    public function run(Request $request): JsonResponse
     {
         $request->validate([
             'weights' => 'required|string'
@@ -81,10 +97,16 @@ class ForecastController extends Controller
 
         try {
             $this->forecastService->forecastAllIngredients($weights);
-            return redirect()->route('admin.forecast.index')
-                             ->with('success', 'Peramalan WMA berhasil dijalankan dan diperbarui untuk semua bahan baku.');
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Peramalan WMA berhasil dijalankan dan diperbarui untuk semua bahan baku.',
+            ]);
         } catch (\Exception $e) {
-            return redirect()->back()->with('error', 'Gagal menjalankan peramalan: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal menjalankan peramalan: ' . $e->getMessage(),
+            ], 500);
         }
     }
 }

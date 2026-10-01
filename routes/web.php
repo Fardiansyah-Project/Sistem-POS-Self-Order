@@ -18,51 +18,93 @@ Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login')->
 Route::post('/login', [LoginController::class, 'login'])->name('login.post')->middleware('guest');
 Route::post('/logout', [LoginController::class, 'logout'])->name('logout')->middleware('auth');
 
-// Route Admin Panel CMS 
+// ═══════════════════════════════════════════════════════════════════════════
+// Route Admin Panel CMS
+// ═══════════════════════════════════════════════════════════════════════════
 Route::prefix('cms/admin')->middleware('auth')->group(function () {
-    Route::get('/dashboard', [DashboardController::class, 'index'])->name('admin.dashboard');
 
-    Route::resource('products', ProductController::class, ['as' => 'admin']);
-    Route::resource('categories', CategoryController::class, ['as' => 'admin']);
-    Route::resource('ingredients', IngredientController::class, ['as' => 'admin']);
+    // ─────────────────────────────────────────────────────────────────────
+    // VIEW ROUTES — Render skeleton Blade saja (tanpa data server-side).
+    // Semua data dimuat via jQuery/AJAX ke endpoint API di bawah.
+    // ─────────────────────────────────────────────────────────────────────
+    Route::get('/dashboard', fn() => view('admin.dashboard'))->name('admin.dashboard');
 
-    // Resep Menu (Penting untuk WMA)
-    Route::prefix('products/{product}/recipes')->name('admin.recipes.')->group(function () {
-        Route::get('/', [RecipeController::class, 'index'])->name('index');
-        Route::post('/', [RecipeController::class, 'store'])->name('store');
-        Route::delete('/{recipe}', [RecipeController::class, 'destroy'])->name('destroy');
-    });
+    // Kategori
+    Route::get('/categories', fn() => view('admin.categories.index'))->name('admin.categories.index');
 
-    // Transaksi
-    Route::prefix('/transactions')->name('admin.transactions.')->group(function () {
-        Route::get('/', [TransactionController::class, 'index'])->name('index');
-        Route::delete('/bulk-destroy', [TransactionController::class, 'bulkDestroy'])->name('bulkDestroy');
-        Route::patch('/{transaction}/cancel', [TransactionController::class, 'cancel'])->name('cancel');
-    });
+    // Produk
+    Route::get('/products', fn() => view('admin.products.index'))->name('admin.products.index');
+    Route::get('/products/create', fn() => view('admin.products.create'))->name('admin.products.create');
+    Route::get('/products/{id}/edit', fn($id) => view('admin.products.edit', compact('id')))->name('admin.products.edit');
 
-    // Monitor Dapur
-    Route::prefix('kitchen')->name('admin.kitchen.')->group(function () {
-        Route::get('/', [KitchenController::class, 'index'])->name('index');
-        Route::patch('/{transaction}/status', [KitchenController::class, 'updateStatus'])->name('update');
-    });
+    // Bahan Baku
+    Route::get('/ingredients', fn() => view('admin.ingredients.index'))->name('admin.ingredients.index');
 
-    // Kasir POS
-    Route::prefix('pos')->name('admin.pos.')->group(function () {
-        Route::get('/', [PosController::class, 'index'])->name('index');
-        Route::post('/', [PosController::class, 'store'])->name('store');
-    });
+    // Resep (nested di bawah produk)
+    Route::get('/products/{productId}/recipes', fn($productId) => view('admin.recipes.index', compact('productId')))->name('admin.recipes.index');
 
-    // Analisis WMA Forecast
-    Route::prefix('forecast')->name('admin.forecast.')->group(function () {
-        Route::get('/', [ForecastController::class, 'index'])->name('index');
-        Route::post('/run', [ForecastController::class, 'run'])->name('run');
-    });
+    // Halaman single-page
+    Route::get('/transactions', fn() => view('admin.transactions.index'))->name('admin.transactions.index');
+    Route::get('/kitchen', fn() => view('admin.kitchen.index'))->name('admin.kitchen.index');
+    Route::get('/pos', fn() => view('admin.pos.index'))->name('admin.pos.index');
+    Route::get('/forecast', fn() => view('admin.forecast.index'))->name('admin.forecast.index');
+    Route::get('/reports', fn() => view('admin.reports.index'))->name('admin.reports.index');
 
-    // Laporan 
-    Route::prefix('reports')->name('admin.reports.')->group(function () {
-        Route::get('/', [ReportController::class, 'index'])->name('index');
-        Route::get('/sales', [ReportController::class, 'sales'])->name('sales');
-        Route::get('/forecast', [ReportController::class, 'forecast'])->name('forecast');
+    // ─────────────────────────────────────────────────────────────────────
+    // API ROUTES — Full REST API (return JSON), dipanggil oleh jQuery/AJAX
+    // ─────────────────────────────────────────────────────────────────────
+    Route::prefix('api')->name('admin.api.')->group(function () {
+
+        // Dashboard
+        Route::get('/dashboard', [DashboardController::class, 'data'])->name('dashboard');
+
+        // Categories CRUD
+        Route::get('/categories', [CategoryController::class, 'index'])->name('categories.index');
+        Route::post('/categories', [CategoryController::class, 'store'])->name('categories.store');
+        Route::get('/categories/{category}', [CategoryController::class, 'show'])->name('categories.show');
+        Route::put('/categories/{category}', [CategoryController::class, 'update'])->name('categories.update');
+        Route::delete('/categories/{category}', [CategoryController::class, 'destroy'])->name('categories.destroy');
+
+        // Products CRUD (POST untuk update karena file upload tidak support PUT native)
+        Route::get('/products', [ProductController::class, 'index'])->name('products.index');
+        Route::post('/products', [ProductController::class, 'store'])->name('products.store');
+        Route::get('/products/{product}', [ProductController::class, 'show'])->name('products.show');
+        Route::post('/products/{product}', [ProductController::class, 'update'])->name('products.update');
+        Route::delete('/products/{product}', [ProductController::class, 'destroy'])->name('products.destroy');
+
+        // Ingredients CRUD
+        Route::get('/ingredients', [IngredientController::class, 'index'])->name('ingredients.index');
+        Route::post('/ingredients', [IngredientController::class, 'store'])->name('ingredients.store');
+        Route::get('/ingredients/{ingredient}', [IngredientController::class, 'show'])->name('ingredients.show');
+        Route::put('/ingredients/{ingredient}', [IngredientController::class, 'update'])->name('ingredients.update');
+        Route::delete('/ingredients/{ingredient}', [IngredientController::class, 'destroy'])->name('ingredients.destroy');
+
+        // Recipes (nested di bawah products)
+        Route::get('/products/{product}/recipes', [RecipeController::class, 'index'])->name('recipes.index');
+        Route::post('/products/{product}/recipes', [RecipeController::class, 'store'])->name('recipes.store');
+        Route::delete('/products/{product}/recipes/{recipe}', [RecipeController::class, 'destroy'])->name('recipes.destroy');
+
+        // Transactions
+        Route::get('/transactions', [TransactionController::class, 'index'])->name('transactions.index');
+        Route::get('/transactions/{transaction}', [TransactionController::class, 'show'])->name('transactions.show');
+        Route::delete('/transactions/bulk-destroy', [TransactionController::class, 'bulkDestroy'])->name('transactions.bulkDestroy');
+        Route::patch('/transactions/{transaction}/cancel', [TransactionController::class, 'cancel'])->name('transactions.cancel');
+
+        // Kitchen
+        Route::get('/kitchen', [KitchenController::class, 'index'])->name('kitchen.index');
+        Route::patch('/kitchen/{transaction}/status', [KitchenController::class, 'updateStatus'])->name('kitchen.update');
+
+        // POS
+        Route::get('/pos/products', [PosController::class, 'products'])->name('pos.products');
+        Route::post('/pos/store', [PosController::class, 'store'])->name('pos.store');
+
+        // Forecast WMA
+        Route::get('/forecast', [ForecastController::class, 'data'])->name('forecast.data');
+        Route::post('/forecast/run', [ForecastController::class, 'run'])->name('forecast.run');
+
+        // Reports (tetap return file download, bukan JSON)
+        Route::get('/reports/sales', [ReportController::class, 'sales'])->name('reports.sales');
+        Route::get('/reports/forecast', [ReportController::class, 'forecast'])->name('reports.forecast');
     });
 });
 

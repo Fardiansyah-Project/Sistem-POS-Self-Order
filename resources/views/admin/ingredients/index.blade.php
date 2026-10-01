@@ -6,7 +6,7 @@
 <div class="card border-0 shadow-sm">
     <div class="card-header bg-white pt-4 pb-3 d-flex justify-content-between align-items-center">
         <h6 class="fw-bold mb-0"><i class="bi bi-basket2 text-primary me-2"></i>Daftar Bahan Baku (Inventory)</h6>
-        <a href="{{ route('admin.ingredients.create') }}" class="btn btn-sm btn-primary shadow-sm"><i class="bi bi-plus-lg me-1"></i> Tambah Bahan</a>
+        <button class="btn btn-sm btn-primary shadow-sm" onclick="showFormModal()"><i class="bi bi-plus-lg me-1"></i> Tambah Bahan</button>
     </div>
     <div class="card-body p-0">
         <div class="table-responsive">
@@ -21,47 +21,66 @@
                         <th class="text-center pe-4">Aksi</th>
                     </tr>
                 </thead>
-                <tbody>
-                    @forelse($ingredients as $idx => $ing)
-                    @php
-                        $isCritical = $ing->stock_quantity <= $ing->minimum_stock;
-                    @endphp
-                    <tr class="{{ $isCritical ? 'table-danger' : '' }}">
-                        <td class="ps-4 text-muted">{{ $idx + 1 }}</td>
-                        <td class="fw-bold">{{ $ing->name }}
-                            @if($isCritical)
-                                <span class="badge bg-danger ms-2" style="font-size: 0.65rem;">Kritis!</span>
-                            @endif
-                        </td>
-                        <td><span class="badge bg-secondary rounded-pill px-3">{{ $ing->unit }}</span></td>
-                        <td class="fw-bold {{ $isCritical ? 'text-danger' : 'text-success' }}">
-                            {{ floatval($ing->stock_quantity) }} {{ $ing->unit }}
-                        </td>
-                        <td class="text-muted">{{ floatval($ing->minimum_stock) }} {{ $ing->unit }}</td>
-                        <td class="text-center pe-4">
-                            <div class="d-flex justify-content-center gap-1">
-                                <a href="{{ route('admin.ingredients.edit', $ing->id) }}" class="btn btn-sm btn-success" title="Edit / Restock"><i class="bi bi-pencil"></i></a>
-                                <form action="{{ route('admin.ingredients.destroy', $ing->id) }}" method="POST" onsubmit="return confirm('Apakah Anda yakin ingin menghapus bahan baku ini?');">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button type="submit" class="btn btn-sm btn-outline-danger" title="Hapus"><i class="bi bi-trash"></i></button>
-                                </form>
-                            </div>
-                        </td>
-                    </tr>
-                    @empty
-                    <tr>
-                        <td colspan="6" class="text-center py-4 text-muted">Belum ada bahan baku tercatat.</td>
-                    </tr>
-                    @endforelse
+                <tbody id="ingredients-tbody">
+                    <tr><td colspan="6" class="text-center py-4 text-muted"><div class="spinner-border spinner-border-sm me-2"></div> Memuat data...</td></tr>
                 </tbody>
             </table>
         </div>
     </div>
-    @if($ingredients->hasPages())
-    <div class="card-footer bg-white pt-4 pb-3 border-top-0">
-        {{ $ingredients->links('pagination::bootstrap-5') }}
+    <div class="card-footer bg-white pt-4 pb-3 border-top-0 d-flex justify-content-end" id="pagination-container">
     </div>
-    @endif
+</div>
+
+<!-- Modal Form -->
+<div class="modal fade" id="ingredientModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header border-bottom-0 pb-0">
+                <h5 class="modal-title fw-bold" id="modalTitle">Tambah Bahan Baku</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form id="ingredientForm">
+                <div class="modal-body">
+                    <input type="hidden" name="id" id="ing-id">
+                    
+                    <div class="mb-3">
+                        <label class="form-label fw-medium">Nama Bahan Baku <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" name="name" id="ing-name" required placeholder="Contoh: Biji Kopi Arabica">
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label fw-medium">Satuan (Unit) <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" name="unit" id="ing-unit" required placeholder="Contoh: Gram, Ml, Pcs">
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-medium">Stok Saat Ini <span class="text-danger">*</span></label>
+                            <div class="input-group">
+                                <input type="number" step="0.01" class="form-control" name="stock_quantity" id="ing-stock" required min="0">
+                                <span class="input-group-text unit-label">-</span>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-medium">Batas Kritis <span class="text-danger">*</span></label>
+                            <div class="input-group">
+                                <input type="number" step="0.01" class="form-control" name="minimum_stock" id="ing-min" required min="0">
+                                <span class="input-group-text unit-label">-</span>
+                            </div>
+                            <div class="form-text small">Minimal stok untuk peringatan.</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer border-top-0 pt-0">
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Batal</button>
+                    <button type="submit" class="btn btn-primary" id="btn-save">Simpan Bahan</button>
+                </div>
+            </form>
+        </div>
+    </div>
 </div>
 @endsection
+
+@push('scripts')
+<script src="/js/admin/ingredients.js"></script>
+@endpush
