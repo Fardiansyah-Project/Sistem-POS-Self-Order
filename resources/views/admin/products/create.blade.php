@@ -12,11 +12,11 @@
             <div class="row">
                 <div class="col-md-8 mb-3">
                     <label class="form-label text-muted small fw-medium">Nama Produk / Menu</label>
-                    <input type="text" name="name" class="form-control" required placeholder="Contoh: Kopi Susu Aren">
+                    <input type="text" name="name" class="form-control" placeholder="Contoh: Kopi Susu Aren">
                 </div>
                 <div class="col-md-4 mb-3">
                     <label class="form-label text-muted small fw-medium">Kategori</label>
-                    <select name="category_id" id="category-select" class="form-select" required>
+                    <select name="category_id" id="category-select" class="form-select">
                         <option value="">-- Memuat Kategori --</option>
                     </select>
                 </div>
@@ -30,11 +30,11 @@
             <div class="row">
                 <div class="col-md-6 mb-3">
                     <label class="form-label text-muted small fw-medium">Harga Jual (Rp)</label>
-                    <input type="number" name="price" class="form-control" value="0" required min="0">
+                    <input type="number" name="price" class="form-control">
                 </div>
                 <div class="col-md-6 mb-3">
                     <label class="form-label text-muted small fw-medium">Status Ketersediaan</label>
-                    <select name="is_available" class="form-select" required>
+                    <select name="is_available" class="form-select">
                         <option value="1">Tersedia (Bisa Dipesan)</option>
                         <option value="0">Habis (Sembunyikan dari Menu)</option>
                     </select>

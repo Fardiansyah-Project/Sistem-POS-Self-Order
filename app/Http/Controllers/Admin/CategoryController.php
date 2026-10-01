@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Category;
+use App\Http\Requests\CategoryRequest;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
@@ -38,14 +39,9 @@ class CategoryController extends Controller
      * POST /cms/admin/api/categories
      * Simpan kategori baru.
      */
-    public function store(Request $request): JsonResponse
+    public function store(CategoryRequest $request): JsonResponse
     {
-        $validated = $request->validate([
-            'name'       => 'required|string|max:100|unique:categories,name',
-            'icon'       => 'nullable|string|max:50',
-            'sort_order' => 'required|integer|min:0',
-            'is_active'  => 'required|boolean',
-        ]);
+        $validated = $request->validated();
 
         $validated['slug'] = Str::slug($validated['name']);
 
@@ -62,14 +58,9 @@ class CategoryController extends Controller
      * PUT /cms/admin/api/categories/{category}
      * Perbarui data kategori.
      */
-    public function update(Request $request, Category $category): JsonResponse
+    public function update(CategoryRequest $request, Category $category): JsonResponse
     {
-        $validated = $request->validate([
-            'name'       => 'required|string|max:100|unique:categories,name,' . $category->id,
-            'icon'       => 'nullable|string|max:50',
-            'sort_order' => 'required|integer|min:0',
-            'is_active'  => 'required|boolean',
-        ]);
+        $validated = $request->validated();
 
         $validated['slug'] = Str::slug($validated['name']);
 

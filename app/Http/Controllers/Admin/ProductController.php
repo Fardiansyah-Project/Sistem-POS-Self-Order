@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Product;
+use App\Http\Requests\ProductRequest;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -43,17 +44,9 @@ class ProductController extends Controller
     /**
      * POST /cms/admin/api/products
      */
-    public function store(Request $request): JsonResponse
+    public function store(ProductRequest $request): JsonResponse
     {
-        $validated = $request->validate([
-            'category_id'  => 'required|exists:categories,id',
-            'name'         => 'required|string|max:150',
-            'description'  => 'nullable|string',
-            'price'        => 'required|numeric|min:0',
-            'image'        => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048',
-            'sort_order'   => 'required|integer|min:0',
-            'is_available' => 'required|boolean',
-        ]);
+        $validated = $request->validated();
 
         $validated['slug'] = Str::slug($validated['name']) . '-' . uniqid();
 
@@ -74,17 +67,9 @@ class ProductController extends Controller
      * POST /cms/admin/api/products/{product}
      * Note: using POST for update to support multipart/form-data for file uploads
      */
-    public function update(Request $request, Product $product): JsonResponse
+    public function update(ProductRequest $request, Product $product): JsonResponse
     {
-        $validated = $request->validate([
-            'category_id'  => 'required|exists:categories,id',
-            'name'         => 'required|string|max:150',
-            'description'  => 'nullable|string',
-            'price'        => 'required|numeric|min:0',
-            'image'        => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048',
-            'sort_order'   => 'required|integer|min:0',
-            'is_available' => 'required|boolean',
-        ]);
+        $validated = $request->validated();
 
         if ($request->name !== $product->name) {
             $validated['slug'] = Str::slug($validated['name']) . '-' . uniqid();
