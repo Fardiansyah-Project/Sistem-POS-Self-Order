@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="id">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -17,9 +18,12 @@
             --koriro-muted: #8a7f74;
         }
 
-        * { box-sizing: border-box; }
+        * {
+            box-sizing: border-box;
+        }
 
-        html, body {
+        html,
+        body {
             height: 100%;
             margin: 0;
         }
@@ -30,7 +34,12 @@
             background-color: var(--koriro-cream);
         }
 
-        h1, h2, h3, h4, h5, .display-serif {
+        h1,
+        h2,
+        h3,
+        h4,
+        h5,
+        .display-serif {
             font-family: 'Fraunces', serif;
         }
 
@@ -45,7 +54,7 @@
             flex: 1 1 52%;
             min-height: 320px;
             background: linear-gradient(180deg, rgba(15, 10, 7, 0.15) 0%, rgba(15, 10, 7, 0.65) 78%, rgba(15, 10, 7, 0.9) 100%),
-                        url('https://images.unsplash.com/photo-1541167760496-1628856ab772?auto=format&fit=crop&w=1400&q=80') center/cover no-repeat;
+                url('https://images.unsplash.com/photo-1541167760496-1628856ab772?auto=format&fit=crop&w=1400&q=80') center/cover no-repeat;
             padding: 2.25rem;
             display: flex;
             flex-direction: column;
@@ -198,75 +207,85 @@
         }
 
         @media (max-width: 991.98px) {
-            .auth-shell { flex-direction: column; }
-            .auth-visual { flex: 0 0 260px; }
-            .auth-form-panel { padding: 2.5rem 1.5rem 3rem; }
+            .auth-shell {
+                flex-direction: column;
+            }
+
+            .auth-visual {
+                flex: 0 0 260px;
+            }
+
+            .auth-form-panel {
+                padding: 2.5rem 1.5rem 3rem;
+            }
         }
     </style>
 </head>
+
 <body>
 
-<div class="auth-shell">
+    <div class="auth-shell">
 
-    <!-- Panel kiri — visual -->
-    <div class="auth-visual">
-        <div class="auth-brand">
-            <span class="auth-brand-mark"><i class="bi bi-cup-hot-fill"></i></span>
-            <div class="auth-brand-text">
-                <div class="auth-brand-eyebrow">KORIRO COFFEE</div>
-                <div class="auth-brand-name">Tondo POS</div>
+        <!-- Panel kiri — visual -->
+        <div class="auth-visual">
+            <div class="auth-brand">
+                <span class="auth-brand-mark"><i class="bi bi-cup-hot-fill"></i></span>
+                <div class="auth-brand-text">
+                    <div class="auth-brand-eyebrow">KORIRO COFFEE</div>
+                    <div class="auth-brand-name">Tondo POS</div>
+                </div>
+            </div>
+
+            <div class="auth-visual-copy">
+                <div class="staff-tag">STAFF ONLY</div>
+                <h2>Kelola dapur, kasir, dan peramalan bahan baku dalam satu papan.</h2>
             </div>
         </div>
 
-        <div class="auth-visual-copy">
-            <div class="staff-tag">STAFF ONLY</div>
-            <h2>Kelola dapur, kasir, dan peramalan bahan baku dalam satu papan.</h2>
+        <!-- Panel kanan — form -->
+        <div class="auth-form-panel">
+            <div class="auth-form-inner">
+                <div class="auth-eyebrow">MASUK</div>
+                <h1 class="auth-heading">Admin / Kasir</h1>
+                <p class="auth-subtext">Gunakan akun yang telah dibuat admin.</p>
+
+                @if ($errors->any())
+                    <div class="alert alert-danger border-0 rounded-3 small py-2">
+                        <i class="bi bi-exclamation-triangle-fill me-2"></i>{{ $errors->first() }}
+                    </div>
+                @endif
+
+                <form action="{{ route('login.post') }}" method="POST">
+                    @csrf
+
+                    <div class="mb-3">
+                        <label class="auth-label" for="email">Email</label>
+                        <input type="email" id="email" name="email" class="form-control auth-input"
+                            value="{{ old('email') }}" autofocus placeholder="admin@koriro.coffee">
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="auth-label" for="password">Password</label>
+                        <input type="password" id="password" name="password" class="form-control auth-input"
+                            placeholder="••••••••">
+                    </div>
+
+                    <div class="mb-4 form-check">
+                        <input type="checkbox" class="form-check-input" id="remember" name="remember">
+                        <label class="form-check-label text-muted small" for="remember">Ingat saya</label>
+                    </div>
+
+                    <button type="submit" class="btn btn-koriro w-100">
+                        Masuk
+                    </button>
+                </form>
+
+                <a href="/" class="auth-back-link">&larr; Kembali ke menu pelanggan</a>
+            </div>
         </div>
+
     </div>
-
-    <!-- Panel kanan — form -->
-    <div class="auth-form-panel">
-        <div class="auth-form-inner">
-            <div class="auth-eyebrow">MASUK</div>
-            <h1 class="auth-heading">Admin / Kasir</h1>
-            <p class="auth-subtext">Gunakan akun yang telah dibuat admin.</p>
-
-            @if ($errors->any())
-                <div class="alert alert-danger border-0 rounded-3 small py-2">
-                    <i class="bi bi-exclamation-triangle-fill me-2"></i>{{ $errors->first() }}
-                </div>
-            @endif
-
-            <form action="{{ route('login.post') }}" method="POST">
-                @csrf
-
-                <div class="mb-3">
-                    <label class="auth-label" for="email">Email</label>
-                    <input type="email" id="email" name="email" class="form-control auth-input"
-                           value="{{ old('email') }}" required autofocus placeholder="admin@koriro.coffee">
-                </div>
-
-                <div class="mb-4">
-                    <label class="auth-label" for="password">Password</label>
-                    <input type="password" id="password" name="password" class="form-control auth-input"
-                           required placeholder="••••••••">
-                </div>
-
-                <div class="mb-4 form-check">
-                    <input type="checkbox" class="form-check-input" id="remember" name="remember">
-                    <label class="form-check-label text-muted small" for="remember">Ingat saya</label>
-                </div>
-
-                <button type="submit" class="btn btn-koriro w-100">
-                    Masuk
-                </button>
-            </form>
-
-            <a href="/" class="auth-back-link">&larr; Kembali ke menu pelanggan</a>
-        </div>
-    </div>
-
-</div>
 
 </body>
+
 </html>
