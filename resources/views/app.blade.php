@@ -30,7 +30,7 @@
     <script>
         // Service Worker hanya digunakan di luar environment lokal agar tidak
         // mencampur asset cache dengan modul Vite saat development.
-        @if(!app() - > environment('local'))
+        @if(!app() -> environment('local'))
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
                 navigator.serviceWorker.register('/sw.js')
