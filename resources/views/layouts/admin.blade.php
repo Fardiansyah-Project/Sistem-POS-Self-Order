@@ -7,12 +7,11 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>@yield('title', 'Admin Dashboard') - Koriro POS</title>
 
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    {{-- <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"> --}}
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-
+    <link rel="stylesheet" href="{{ asset('bootstrap/css/bootstrap.min.css') }}">
     <!-- Custom Admin CSS -->
     @vite(['resources/css/app.css'])
-
     <style>
         :root {
             --bs-body-bg: #f8f9fa;
@@ -202,13 +201,13 @@
         </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    {{-- <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script> --}}
+    {{-- <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script> --}}
+    @vite(['resources/js/app.js'])
     <!-- Chart.js untuk dashboard & grafik peramalan WMA -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <!-- Global Admin JS helpers -->
-    <script src="/js/admin/app.js"></script>
-    @stack('scripts')
+    <script src="{{ asset('bootstrap/js/bootstrap.bundle.min.js') }}"></script>
+    <template id="admin-page-scripts">@stack('scripts')</template>
 </body>
 
 </html>

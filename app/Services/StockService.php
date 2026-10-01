@@ -41,7 +41,7 @@ class StockService
                 $ingredient->decrement('stock_quantity', $quantity);
             }
 
-            $lockedTransaction->update(['stock_deducted_at' => now()]);
+            $lockedTransaction->update(['stock_deducted_at' => now('Asia/Makassar')]);
         });
     }
 }

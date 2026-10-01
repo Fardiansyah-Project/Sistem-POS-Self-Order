@@ -128,7 +128,7 @@ class MidtransService
             ];
 
             if ($paymentStatus === 'paid') {
-                $updateData['paid_at'] = $transaction->paid_at ?? now();
+                $updateData['paid_at'] = $transaction->paid_at ?? now('Asia/Makassar');
                 $updateData['order_status'] = 'processing';
             }
 
