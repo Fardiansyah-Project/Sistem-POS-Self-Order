@@ -35,6 +35,8 @@ function renderTable(categories) {
 
     categories.forEach(cat => {
         let iconHtml = cat.icon ? `<i class="bi ${cat.icon} fs-5 text-muted"></i>` : '-';
+        console.log("Icons : ", iconHtml);
+        
         let statusHtml = cat.is_active 
             ? '<span class="badge bg-success bg-opacity-10 text-success rounded-pill px-3">Aktif</span>' 
             : '<span class="badge bg-secondary bg-opacity-10 text-secondary rounded-pill px-3">Non-Aktif</span>';
@@ -42,7 +44,7 @@ function renderTable(categories) {
         let tr = `
             <tr>
                 <td class="ps-4 fw-medium text-dark">${cat.name}</td>
-                <td>${iconHtml}</td>
+                <td>${cat.icon}</td>
                 <td><span class="badge bg-light text-dark border">${cat.sort_order}</span></td>
                 <td>${statusHtml}</td>
                 <td class="text-center"><span class="badge bg-info bg-opacity-10 text-info rounded-pill">${cat.products_count || 0}</span></td>
