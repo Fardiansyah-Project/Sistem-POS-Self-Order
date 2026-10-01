@@ -15,6 +15,7 @@ function loadCategories() {
         type: 'GET',
         success: function (res) {
             renderTable(res.data);
+            // console.log('Response Data : ', res.data);
         },
         error: function (xhr) {
             $('#categories-tbody').html('<tr><td colspan="6" class="text-center py-4 text-danger">Gagal memuat data.</td></tr>');

@@ -50,9 +50,6 @@ Route::prefix('cms/admin')->middleware('auth')->group(function () {
     Route::get('/forecast', fn() => view('admin.forecast.index'))->name('admin.forecast.index');
     Route::get('/reports', fn() => view('admin.reports.index'))->name('admin.reports.index');
 
-    // ─────────────────────────────────────────────────────────────────────
-    // API ROUTES — Full REST API (return JSON), dipanggil oleh jQuery/AJAX
-    // ─────────────────────────────────────────────────────────────────────
     Route::prefix('api')->name('admin.api.')->group(function () {
 
         // Dashboard

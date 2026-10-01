@@ -10,7 +10,7 @@ use App\Http\Controllers\Api\V1\OrderStatusController;
 use App\Http\Controllers\Api\V1\ForecastController;
 
 Route::prefix('v1')->group(function () {
-
+    
     Route::prefix('auth')->group(function () {
         Route::post('login', [AuthController::class, 'login']);
     });

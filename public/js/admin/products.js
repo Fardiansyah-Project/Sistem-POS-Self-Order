@@ -16,6 +16,7 @@ function loadProducts(page = 1) {
         success: function (res) {
             renderTable(res.data);
             renderPagination(res);
+            // console.log('Response Data : ', res);
         },
         error: function (xhr) {
             showAlert('error', 'Gagal memuat daftar produk.');
