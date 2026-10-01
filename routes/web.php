@@ -21,7 +21,7 @@ Route::post('/logout', [LoginController::class, 'logout'])->name('logout')->midd
 // ═══════════════════════════════════════════════════════════════════════════
 // Route Admin Panel CMS
 // ═══════════════════════════════════════════════════════════════════════════
-Route::prefix('cms/admin')->middleware('auth')->group(function () {
+Route::prefix('cms/admin')->middleware('auth:web,sanctum')->group(function () {
 
     // ─────────────────────────────────────────────────────────────────────
     // VIEW ROUTES — Render skeleton Blade saja (tanpa data server-side).
