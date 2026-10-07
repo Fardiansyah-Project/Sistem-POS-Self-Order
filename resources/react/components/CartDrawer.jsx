@@ -4,7 +4,8 @@ import useCart from '../hooks/useCart';
 import CartItem from './CartItem';
 
 const CartDrawer = () => {
-    const { isOpen, closeCart, items, getTotalPrice } = useCart();
+
+    const { isOpen, closeCart, items, getTotalPrice, orderingOpen } = useCart();
     const navigate = useNavigate();
 
     const formatPrice = (price) => {
@@ -78,9 +79,12 @@ const CartDrawer = () => {
                                 {formatPrice(getTotalPrice())}
                             </span>
                         </div>
+                        {!orderingOpen && <p className="mb-3 text-center text-sm font-medium text-gray-400">Pemesanan sedang ditutup.</p>}
                         <button
                             onClick={handleCheckout}
-                            className="w-full py-3.5 bg-brand hover:bg-brand-dk text-white rounded-xl font-bold text-lg transition-colors shadow-glow flex items-center justify-center gap-2"
+
+                            disabled={!orderingOpen}
+                            className="w-full py-3.5 bg-brand hover:bg-brand-dk text-white rounded-xl font-bold text-lg transition-colors shadow-glow flex items-center justify-center gap-2 disabled:bg-gray-500 disabled:cursor-not-allowed"
                         >
                             Lanjut ke Pembayaran
                             <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
