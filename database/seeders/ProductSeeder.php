@@ -17,21 +17,21 @@ class ProductSeeder extends Seeder
                 'category_slug' => 'espresso-based',
                 'name'          => 'Americano',
                 'description'   => 'Espresso yang dilarutkan dengan air panas. Rasa kopi yang kuat dan bold.',
-                'price'         => 18000,
+                'price'         => 20000,
                 'sort_order'    => 1,
             ],
             [
                 'category_slug' => 'espresso-based',
                 'name'          => 'Cappuccino',
                 'description'   => 'Espresso dengan steamed milk dan milk foam yang creamy.',
-                'price'         => 22000,
+                'price'         => 30000,
                 'sort_order'    => 2,
             ],
             [
                 'category_slug' => 'espresso-based',
                 'name'          => 'Caffe Latte',
                 'description'   => 'Espresso dengan banyak steamed milk dan sedikit milk foam.',
-                'price'         => 22000,
+                'price'         => 30000,
                 'sort_order'    => 3,
             ],
             [
@@ -56,12 +56,19 @@ class ProductSeeder extends Seeder
                 'price'         => 27000,
                 'sort_order'    => 2,
             ],
+            [
+                'category_slug' => 'signature-drinks',
+                'name'          => 'Caramel Salt',
+                'description'   => 'Menu Caramel Salt dari Koriro Coffee.',
+                'price'         => 30000,
+                'sort_order'    => 3,
+            ],
             // Non Coffee
             [
                 'category_slug' => 'non-coffee',
                 'name'          => 'Matcha Latte',
                 'description'   => 'Matcha premium grade Jepang dengan susu full cream yang creamy.',
-                'price'         => 25000,
+                'price'         => 28000,
                 'sort_order'    => 1,
             ],
             [

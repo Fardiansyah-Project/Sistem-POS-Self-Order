@@ -73,7 +73,8 @@ function renderOrders(orders) {
         } else if (order.order_status === 'processing') {
             actionBtn = `<button onclick="updateStatus(${order.id}, 'ready')" class="btn btn-success w-100 fw-bold shadow-sm py-2"><i class="bi bi-check2-circle me-1"></i> Tandai Siap Diambil</button>`;
         } else if (order.order_status === 'ready') {
-            actionBtn = `<button onclick="updateStatus(${order.id}, 'completed')" class="btn btn-outline-secondary w-100 fw-bold py-2"><i class="bi bi-box-arrow-right me-1"></i> Selesaikan Pesanan</button>`;
+
+            actionBtn = `<button onclick="closeKitchenOrder(${order.id})" class="btn btn-outline-secondary w-100 fw-bold py-2"><i class="bi bi-box-arrow-right me-1"></i> Selesaikan Pesanan</button>`;
         }
 
         let html = `
@@ -108,6 +109,22 @@ function renderOrders(orders) {
             </div>
         `;
         container.append(html);
+    });
+}
+
+function closeKitchenOrder(id) {
+    confirmAction('Tutup Pesanan', 'Konfirmasi pesanan telah diserahkan kepada pelanggan?', function () {
+        $.ajax({
+            url: API_URL + '/transactions/' + id + '/close',
+            type: 'PATCH',
+            success: function (res) {
+                showAlert('success', res.message);
+                loadActiveOrders();
+            },
+            error: function (xhr) {
+                showAlert('error', xhr.responseJSON?.message || 'Gagal menutup pesanan.');
+            }
+        });
     });
 }
 

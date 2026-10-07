@@ -7,6 +7,7 @@ use App\Models\Category;
 use App\Models\Product;
 use App\Models\Transaction;
 use App\Services\StockService;
+use App\Http\Requests\PosRequest;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -46,16 +47,9 @@ class PosController extends Controller
      * POST /cms/admin/api/pos/store
      * Menyimpan pesanan dari POS.
      */
-    public function store(Request $request): JsonResponse
+    public function store(PosRequest $request): JsonResponse
     {
-        $validated = $request->validate([
-            'customer_name' => 'required|string|max:150',
-            'table_number'  => 'nullable|string|max:50',
-            'notes'         => 'nullable|string',
-            'items'         => 'required|string', // JSON string from frontend
-            'payment_type'  => 'required|string', // e.g., 'cash'
-            'amount_paid'   => 'required|numeric|min:0',
-        ]);
+        $validated = $request->validated();
 
         $items = json_decode($validated['items'], true);
 

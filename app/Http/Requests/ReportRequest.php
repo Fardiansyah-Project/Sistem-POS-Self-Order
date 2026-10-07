@@ -12,7 +12,7 @@ class ReportRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return false;
+        return true;
     }
 
     /**
@@ -22,8 +22,24 @@ class ReportRequest extends FormRequest
      */
     public function rules(): array
     {
+        return $this->routeIs('admin.api.reports.sales')
+            ? [
+                'start_date' => ['required', 'date'],
+                'end_date' => ['required', 'date', 'after_or_equal:start_date'],
+            ]
+            : ['month' => ['required', 'date_format:Y-m']];
+    }
+
+    public function messages(): array
+    {
         return [
-            //
+            'start_date.required' => 'Tanggal mulai wajib dipilih.',
+            'start_date.date' => 'Format tanggal mulai tidak valid.',
+            'end_date.required' => 'Tanggal akhir wajib dipilih.',
+            'end_date.date' => 'Format tanggal akhir tidak valid.',
+            'end_date.after_or_equal' => 'Tanggal akhir harus sama atau setelah tanggal mulai.',
+            'month.required' => 'Bulan laporan wajib dipilih.',
+            'month.date_format' => 'Format bulan harus YYYY-MM.',
         ];
     }
 }

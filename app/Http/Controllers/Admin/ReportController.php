@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Transaction;
 use App\Models\RawMaterialForecast;
+use App\Http\Requests\ReportRequest;
 use Illuminate\Http\Request;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
@@ -15,17 +16,14 @@ class ReportController extends Controller
      * GET /cms/admin/api/reports/sales
      * Export laporan penjualan (Download PDF/Excel - belum support JSON full karena outputnya file)
      */
-    public function sales(Request $request)
+    public function sales(ReportRequest $request)
     {
-        $request->validate([
-            'start_date' => 'required|date',
-            'end_date'   => 'required|date|after_or_equal:start_date',
-        ]);
+        $validated = $request->validated();
 
         $transactions = Transaction::with('details')
             ->where('payment_status', 'paid')
-            ->whereDate('created_at', '>=', $request->start_date)
-            ->whereDate('created_at', '<=', $request->end_date)
+            ->whereDate('created_at', '>=', $validated['start_date'])
+            ->whereDate('created_at', '<=', $validated['end_date'])
             ->orderBy('created_at', 'desc')
             ->get();
 
@@ -33,8 +31,8 @@ class ReportController extends Controller
         
         $pdf = Pdf::loadView('admin.reports.sales_pdf', [
             'transactions' => $transactions,
-            'startDate'    => Carbon::parse($request->start_date),
-            'endDate'      => Carbon::parse($request->end_date),
+            'startDate'    => Carbon::parse($validated['start_date']),
+            'endDate'      => Carbon::parse($validated['end_date']),
             'totalRevenue' => $totalRevenue
         ]);
 
@@ -45,13 +43,11 @@ class ReportController extends Controller
      * GET /cms/admin/api/reports/forecast
      * Export laporan peramalan stok bahan (Download PDF)
      */
-    public function forecast(Request $request)
+    public function forecast(ReportRequest $request)
     {
-        $request->validate([
-            'month' => 'required|date_format:Y-m',
-        ]);
+        $validated = $request->validated();
 
-        $date = Carbon::createFromFormat('Y-m', $request->month)->startOfMonth();
+        $date = Carbon::createFromFormat('Y-m', $validated['month'])->startOfMonth();
 
         $forecasts = RawMaterialForecast::with('ingredient')
             ->whereYear('period_date', $date->year)
@@ -65,6 +61,6 @@ class ReportController extends Controller
             'endDate'   => $date->copy()->endOfMonth(),
         ]);
 
-        return $pdf->download('laporan-peramalan-' . $request->month . '.pdf');
+        return $pdf->download('laporan-peramalan-' . $validated['month'] . '.pdf');
     }
 }

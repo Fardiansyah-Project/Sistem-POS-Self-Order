@@ -12,7 +12,7 @@ class ForecastRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return false;
+        return true;
     }
 
     /**
@@ -23,7 +23,15 @@ class ForecastRequest extends FormRequest
     public function rules(): array
     {
         return [
-            //
+            'weights' => ['required', 'string', 'regex:/^\\s*\\d+(?:\\s*,\\s*\\d+)*\\s*$/'],
+        ];
+    }
+
+    public function messages(): array
+    {
+        return [
+            'weights.required' => 'Masukkan bobot periode WMA.',
+            'weights.regex' => 'Bobot harus berupa angka positif yang dipisahkan koma, contoh: 1,2,3.',
         ];
     }
 }

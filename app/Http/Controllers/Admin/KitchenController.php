@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Transaction;
 use App\Services\StockService;
+use App\Http\Requests\KitchenRequest;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -51,21 +52,19 @@ class KitchenController extends Controller
      * PATCH /cms/admin/api/kitchen/{transaction}/status
      * Update status pesanan di dapur.
      */
-    public function updateStatus(Request $request, Transaction $transaction): JsonResponse
+    public function updateStatus(KitchenRequest $request, Transaction $transaction): JsonResponse
     {
-        $request->validate([
-            'order_status' => 'required|in:processing,ready,completed'
-        ]);
+        $validated = $request->validated();
 
-        if ($request->order_status === 'processing' && $transaction->order_status !== 'processing') {
+        if ($validated['order_status'] === 'processing' && $transaction->order_status !== 'processing') {
             $this->stock->deductForTransaction($transaction);
         }
 
         $transaction->update([
-            'order_status' => $request->order_status
+            'order_status' => $validated['order_status']
         ]);
 
-        $message = match($request->order_status) {
+        $message = match($validated['order_status']) {
             'processing' => 'Pesanan sedang diproses di dapur.',
             'ready'      => 'Pesanan siap untuk diambil pelanggan.',
             'completed'  => 'Pesanan telah selesai/diambil.',

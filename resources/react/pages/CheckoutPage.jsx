@@ -2,12 +2,20 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import useCart from '../hooks/useCart';
 import useOrder from '../hooks/useOrder';
+import { getOrderAvailability } from '../services/api';
 
 const CheckoutPage = () => {
     const { items, getTotalPrice, clearCart } = useCart();
     const { submitOrder, isSubmitting, error } = useOrder();
     const navigate = useNavigate();
     const orderHistoryKey = 'koriro_order_history';
+    const [orderingOpen, setOrderingOpen] = useState(true);
+
+    React.useEffect(() => {
+        getOrderAvailability()
+            .then((res) => setOrderingOpen(Boolean(res.data.is_open)))
+            .catch(() => setOrderingOpen(false));
+    }, []);
 
     const [formData, setFormData] = useState({
         customer_name: '',
@@ -29,6 +37,11 @@ const CheckoutPage = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+
+        if (!orderingOpen) {
+            alert('Pemesanan sedang ditutup. Silakan coba kembali nanti.');
+            return;
+        }
 
         if (items.length === 0) {
             alert('Keranjang masih kosong!');
@@ -87,6 +100,12 @@ const CheckoutPage = () => {
                 </button>
                 Checkout Pesanan
             </h1>
+
+            {!orderingOpen && (
+                <div className="mb-6 p-4 rounded-xl bg-gray-200 text-gray-800 font-semibold text-center">
+                    Pemesanan sedang ditutup. Checkout tidak dapat dilanjutkan.
+                </div>
+            )}
 
             {error && (
                 <div className="mb-6 p-4 bg-red-500/10 border border-red-500/20 rounded-xl text-red-400">
@@ -181,7 +200,7 @@ const CheckoutPage = () => {
                 {/* Submit */}
                 <button
                     type="submit"
-                    disabled={isSubmitting}
+                    disabled={isSubmitting || !orderingOpen}
                     className={`w-full py-4 rounded-xl font-bold text-lg transition-all shadow-glow flex justify-center items-center gap-2 ${isSubmitting
                         ? 'bg-surface text-muted cursor-not-allowed'
                         : 'bg-brand hover:bg-brand-dk text-white'

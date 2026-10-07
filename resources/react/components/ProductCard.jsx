@@ -1,7 +1,7 @@
 import React from "react";
 import useCart from "../hooks/useCart";
 
-const ProductCard = ({ product }) => {
+const ProductCard = ({ product, orderingOpen = true }) => {
     const { addItem } = useCart();
 
     const formatPrice = (price) => {
@@ -13,7 +13,7 @@ const ProductCard = ({ product }) => {
     };
 
     return (
-        <div className="bg-card rounded-2xl overflow-hidden border border-subtle flex flex-col h-full transition-transform hover:-translate-y-1 hover:shadow-lg">
+        <div className={`bg-card rounded-2xl overflow-hidden border border-subtle flex flex-col h-full transition-all ${orderingOpen ? 'hover:-translate-y-1 hover:shadow-lg' : 'grayscale opacity-60'}`}>
             <div className="relative pt-[100%] bg-surface">
                 <img
                     src={product.image_url}
@@ -36,7 +36,8 @@ const ProductCard = ({ product }) => {
                 </p>
                 <button
                     onClick={() => addItem(product)}
-                    className="w-full py-2 sm:py-2.5 px-3 sm:px-4 bg-brand hover:bg-brand-dk text-white rounded-xl font-medium text-sm sm:text-base transition-colors flex items-center justify-center gap-1.5 sm:gap-2"
+                    disabled={!orderingOpen}
+                    className="w-full py-2 sm:py-2.5 px-3 sm:px-4 bg-brand hover:bg-brand-dk text-white rounded-xl font-medium text-sm sm:text-base transition-colors flex items-center justify-center gap-1.5 sm:gap-2 disabled:bg-gray-500 disabled:cursor-not-allowed"
                 >
                     <svg
                         xmlns="http://www.w3.org/2000/svg"
@@ -50,7 +51,7 @@ const ProductCard = ({ product }) => {
                             clipRule="evenodd"
                         />
                     </svg>
-                    Tambah
+                    {orderingOpen ? 'Tambah' : 'Order Ditutup'}
                 </button>
             </div>
         </div>

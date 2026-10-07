@@ -33,6 +33,9 @@ api.interceptors.response.use(
 
 // ─── API Functions ───────────────────────────────────────────────
 
+/** Ambil status buka/tutup order dari server. */
+export const getOrderAvailability = () => api.get('/order-availability');
+
 /** Ambil semua kategori aktif */
 export const getCategories = () => api.get('/categories');
 

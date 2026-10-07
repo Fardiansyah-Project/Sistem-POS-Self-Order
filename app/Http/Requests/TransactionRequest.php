@@ -12,7 +12,7 @@ class TransactionRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return false;
+        return true;
     }
 
     /**
@@ -23,7 +23,8 @@ class TransactionRequest extends FormRequest
     public function rules(): array
     {
         return [
-            //
+            'ids' => ['required', 'array', 'min:1'],
+            'ids.*' => ['required', 'integer', 'distinct', 'exists:transactions,id'],
         ];
     }
 }

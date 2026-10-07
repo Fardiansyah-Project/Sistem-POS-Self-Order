@@ -3,6 +3,11 @@
 @section('title', 'Dashboard')
 
 @section('content')
+<div class="d-flex justify-content-end mb-3">
+    <button type="button" class="btn btn-danger" id="toggle-order-status" data-open="1">
+        <i class="bi bi-lock-fill me-1"></i> Tutup Order Customer
+    </button>
+</div>
 <div class="row g-4 mb-4">
     <!-- Card Pendapatan -->
     <div class="col-md-4">

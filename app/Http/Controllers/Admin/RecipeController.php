@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Product;
+use App\Http\Requests\RecipeRequest;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -33,28 +34,25 @@ class RecipeController extends Controller
      * POST /cms/admin/api/products/{product}/recipes
      * Tambahkan bahan baku ke dalam resep produk
      */
-    public function store(Request $request, Product $product): JsonResponse
+    public function store(RecipeRequest $request, Product $product): JsonResponse
     {
-        $request->validate([
-            'ingredient_id'   => 'required|exists:ingredients,id',
-            'quantity_needed' => 'required|numeric|min:0.01',
-        ]);
+        $validated = $request->validated();
 
         // Cek jika sudah ada, maka update
         $existing = DB::table('recipes')
             ->where('product_id', $product->id)
-            ->where('ingredient_id', $request->ingredient_id)
+            ->where('ingredient_id', $validated['ingredient_id'])
             ->first();
 
         if ($existing) {
-            $product->ingredients()->updateExistingPivot($request->ingredient_id, [
-                'quantity_needed' => $request->quantity_needed,
+            $product->ingredients()->updateExistingPivot($validated['ingredient_id'], [
+                'quantity_needed' => $validated['quantity_needed'],
                 'updated_at'      => now(),
             ]);
             $msg = 'Bahan baku di resep berhasil diperbarui.';
         } else {
-            $product->ingredients()->attach($request->ingredient_id, [
-                'quantity_needed' => $request->quantity_needed,
+            $product->ingredients()->attach($validated['ingredient_id'], [
+                'quantity_needed' => $validated['quantity_needed'],
                 'created_at'      => now(),
                 'updated_at'      => now(),
             ]);

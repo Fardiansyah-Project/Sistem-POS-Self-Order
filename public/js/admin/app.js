@@ -9,6 +9,14 @@
 const API_URL = '/cms/admin/api';
 
 // ─── Global AJAX Setup: CSRF Token + Accept JSON ───────────────────────
+// Browser native constraint validation is disabled; server FormRequests return JSON 422,
+// and AJAX displays field errors through handleValidationErrors().
+$(function () {
+    const ajaxForms = '#categoryForm, #ingredientForm, #product-form, #recipe-form, #checkout-form, #form-run-forecast';
+    $(ajaxForms).attr('novalidate', 'novalidate');
+    $(`${ajaxForms} :input[required]`).removeAttr('required');
+});
+
 $.ajaxSetup({
     headers: {
         'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content'),
@@ -61,18 +69,31 @@ function handleValidationErrors(xhr) {
         let firstField = null;
 
         $.each(errors, function (field, messages) {
-            const input = $('[name="' + field + '"]');
-            if (input.length) {
+            // Laravel nested fields such as items.0.quantity map to items[] controls.
+            const safeField = field.replace(/["\\\\]/g, '');
+            let input = $('[name="' + safeField + '"]');
+            if (!input.length && safeField.includes('.')) {
+                input = $('[name="' + safeField.split('.')[0] + '[]"]');
+            }
+            const message = Array.isArray(messages) ? messages[0] : messages;
+            if (input.length && message) {
                 input.addClass('is-invalid');
-                input.after('<div class="invalid-feedback">' + messages[0] + '</div>');
-                if (!firstField) firstField = input;
+                const feedback = $('<div class="invalid-feedback d-block"></div>').text(message);
+                const inputGroup = input.last().closest('.input-group');
+                if (inputGroup.length) {
+                    inputGroup.after(feedback);
+                } else {
+                    input.last().after(feedback);
+                }
+                if (!firstField) firstField = input.first();
             }
         });
 
         // Focus ke field error pertama
         if (firstField) firstField.focus();
 
-        showAlert('error', xhr.responseJSON.message || 'Data tidak valid. Periksa kembali isian form.');
+        const firstError = Object.values(errors).flat()[0];
+        showAlert('error', firstError || xhr.responseJSON.message || 'Data tidak valid. Periksa kembali isian form.');
     } else if (xhr.status === 404) {
         showAlert('error', 'Data tidak ditemukan.');
     } else if (xhr.status === 500) {

@@ -10,9 +10,13 @@ const useCart = create(
             items: [],    // [{id, name, price, image_url, quantity, notes}]
             isOpen: false,
             toast: null,
+            orderingOpen: true,
 
-            /** Tambah produk ke cart. Jika sudah ada, increment quantity. */
+            setOrderingOpen: (orderingOpen) => set({ orderingOpen }),
+
+            /** Tambah produk ke cart hanya saat pemesanan dibuka. */
             addItem: (product) => {
+                if (!get().orderingOpen) return;
                 set((state) => {
                     const existing = state.items.find((i) => i.id === product.id);
                     const toast = {
@@ -82,7 +86,7 @@ const useCart = create(
         }),
         {
             name: 'koriro-cart',
-            partialize: (state) => ({ items: state.items }), // hanya simpan items
+            partialize: (state) => ({ items: state.items }), // Status buka/tutup selalu diambil ulang dari server
         }
     )
 );

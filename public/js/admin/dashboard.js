@@ -1,6 +1,55 @@
 $(document).ready(function () {
     loadDashboardData();
+    loadOrderAvailability();
+    $('#toggle-order-status').on('click', toggleOrderAvailability);
 });
+
+function loadOrderAvailability() {
+    $.get(API_URL + '/order-availability')
+        .done(function (res) {
+            renderOrderAvailability(res.is_open);
+        })
+        .fail(function () {
+            showAlert('error', 'Gagal memuat status pemesanan customer.');
+        });
+}
+
+function renderOrderAvailability(isOpen) {
+    const button = $('#toggle-order-status');
+    button.attr('data-open', isOpen ? '1' : '0');
+    button.toggleClass('btn-danger', isOpen).toggleClass('btn-success', !isOpen);
+    button.html(isOpen
+        ? '<i class="bi bi-lock-fill me-1"></i> Tutup Order Customer'
+        : '<i class="bi bi-unlock-fill me-1"></i> Buka Order Customer');
+}
+
+function toggleOrderAvailability() {
+    const button = $('#toggle-order-status');
+    const currentOpen = button.attr('data-open') === '1';
+    const nextOpen = !currentOpen;
+    const prompt = nextOpen
+        ? 'Buka kembali pemesanan customer?'
+        : 'Tutup pemesanan customer? Customer tidak dapat menambahkan item atau checkout.';
+
+    confirmAction(nextOpen ? 'Buka Order' : 'Tutup Order', prompt, function () {
+        button.prop('disabled', true);
+        $.ajax({
+            url: API_URL + '/order-availability',
+            type: 'PATCH',
+            data: { is_open: nextOpen ? 1 : 0 },
+            success: function (res) {
+                renderOrderAvailability(res.is_open);
+                showAlert('success', res.message);
+            },
+            error: function (xhr) {
+                showAlert('error', xhr.responseJSON?.message || 'Gagal mengubah status order.');
+            },
+            complete: function () {
+                button.prop('disabled', false);
+            }
+        });
+    });
+}
 
 function loadDashboardData() {
     $.ajax({

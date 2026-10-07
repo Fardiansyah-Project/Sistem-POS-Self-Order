@@ -4,7 +4,6 @@ namespace App\Services;
 
 use App\Models\Ingredient;
 use App\Models\RawMaterialForecast;
-use App\Models\TransactionDetail;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 
@@ -167,7 +166,7 @@ class ForecastService
         }
 
         // Target periode peramalan = bulan depan
-        $periodDate = Carbon::now()->addMonth()->startOfMonth()->format('Y-m-d');
+        $periodDate = Carbon::now('Asia/Makassar')->addMonth()->startOfMonth()->format('Y-m-d');
 
         // Simpan atau update hasil peramalan ke database
         $forecast = RawMaterialForecast::updateOrCreate(

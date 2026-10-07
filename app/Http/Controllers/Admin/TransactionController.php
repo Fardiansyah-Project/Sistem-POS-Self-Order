@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Transaction;
+use App\Http\Requests\TransactionRequest;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -89,21 +90,46 @@ class TransactionController extends Controller
     }
 
     /**
-     * DELETE /cms/admin/api/transactions/bulk-destroy
-     * Hapus banyak transaksi (Bulk Delete)
+     * PATCH /cms/admin/api/transactions/{transaction}/close
+     * Tutup pesanan yang sudah selesai diproses dan dibayar.
      */
-    public function bulkDestroy(Request $request): JsonResponse
+    public function close(Transaction $transaction): JsonResponse
     {
-        $request->validate([
-            'ids'   => 'required|array',
-            'ids.*' => 'exists:transactions,id',
-        ]);
+        if ($transaction->payment_status !== 'paid') {
+            return response()->json([
+                'success' => false,
+                'message' => 'Pesanan belum dibayar sehingga tidak dapat ditutup.',
+            ], 422);
+        }
 
-        Transaction::whereIn('id', $request->ids)->delete();
+        if (in_array($transaction->order_status, ['completed', 'cancelled'], true)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Pesanan ini sudah ditutup atau dibatalkan.',
+            ], 422);
+        }
+
+        $transaction->update(['order_status' => 'completed']);
 
         return response()->json([
             'success' => true,
-            'message' => count($request->ids) . ' transaksi berhasil dihapus.'
+            'message' => 'Pesanan berhasil ditutup.',
+            'data' => ['id' => $transaction->id, 'order_status' => $transaction->order_status],
+        ]);
+    }
+
+    /**
+     * DELETE /cms/admin/api/transactions/bulk-destroy
+     * Hapus banyak transaksi (Bulk Delete)
+     */
+    public function bulkDestroy(TransactionRequest $request): JsonResponse
+    {
+        $ids = $request->validated()['ids'];
+        Transaction::whereIn('id', $ids)->delete();
+
+        return response()->json([
+            'success' => true,
+            'message' => count($ids) . ' transaksi berhasil dihapus.'
         ]);
     }
 }

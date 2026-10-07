@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Ingredient;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use App\Http\Requests\IngredientRequest;
 
 class IngredientController extends Controller
 {
@@ -45,14 +46,9 @@ class IngredientController extends Controller
      * POST /cms/admin/api/ingredients
      * Simpan bahan baku baru.
      */
-    public function store(Request $request): JsonResponse
+    public function store(IngredientRequest $request): JsonResponse
     {
-        $validated = $request->validate([
-            'name'           => 'required|string|max:100|unique:ingredients,name',
-            'unit'           => 'required|string|max:20',
-            'stock_quantity' => 'required|numeric|min:0',
-            'minimum_stock'  => 'required|numeric|min:0',
-        ]);
+        $validated = $request->validated();
 
         $ingredient = Ingredient::create($validated);
 
@@ -67,14 +63,9 @@ class IngredientController extends Controller
      * PUT /cms/admin/api/ingredients/{ingredient}
      * Perbarui data bahan baku.
      */
-    public function update(Request $request, Ingredient $ingredient): JsonResponse
+    public function update(IngredientRequest $request, Ingredient $ingredient): JsonResponse
     {
-        $validated = $request->validate([
-            'name'           => 'required|string|max:100|unique:ingredients,name,' . $ingredient->id,
-            'unit'           => 'required|string|max:20',
-            'stock_quantity' => 'required|numeric|min:0',
-            'minimum_stock'  => 'required|numeric|min:0',
-        ]);
+        $validated = $request->validated();
 
         $ingredient->update($validated);
 

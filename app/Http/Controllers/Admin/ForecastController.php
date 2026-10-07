@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Ingredient;
 use App\Models\RawMaterialForecast;
 use App\Services\ForecastService;
+use App\Http\Requests\ForecastRequest;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -86,13 +87,10 @@ class ForecastController extends Controller
      * POST /cms/admin/api/forecast/run
      * Jalankan peramalan WMA untuk semua bahan baku.
      */
-    public function run(Request $request): JsonResponse
+    public function run(ForecastRequest $request): JsonResponse
     {
-        $request->validate([
-            'weights' => 'required|string'
-        ]);
-
-        $weightsStr = explode(',', $request->weights);
+        $validated = $request->validated();
+        $weightsStr = explode(',', $validated['weights']);
         $weights = array_map('intval', $weightsStr);
 
         try {

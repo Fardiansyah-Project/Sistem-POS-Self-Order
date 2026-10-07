@@ -31,4 +31,21 @@ class CategoryRequest extends FormRequest
             'is_active'  => 'required|boolean',
         ];
     }
+
+    public function messages(): array
+    {
+        return [
+            'name.required' => 'The category name is required.',
+            'name.string'   => 'The category name must be a string.',
+            'name.max'      => 'The category name may not be greater than 100 characters.',
+            'name.unique'   => 'The category name has already been taken.',
+            'icon.string'   => 'The icon must be a string.',
+            'icon.max'      => 'The icon may not be greater than 50 characters.',
+            'sort_order.required' => 'The sort order is required.',
+            'sort_order.integer'  => 'The sort order must be an integer.',
+            'sort_order.min'      => 'The sort order must be at least 0.',
+            'is_active.required'  => 'The active status is required.',
+            'is_active.boolean'   => 'The active status must be true or false.',
+        ];
+    }
 }

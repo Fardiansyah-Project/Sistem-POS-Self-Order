@@ -94,6 +94,9 @@ function renderTable(transactions) {
 
         // Action Buttons
         let btnView = `<button class="btn btn-sm btn-outline-primary" onclick="showReceipt(${tx.id})" title="Lihat Struk"><i class="bi bi-receipt"></i></button>`;
+        let btnClose = (tx.payment_status === 'paid' && tx.order_status !== 'completed' && tx.order_status !== 'cancelled')
+            ? `<button class="btn btn-sm btn-outline-success" onclick="closeTransaction(${tx.id})" title="Tutup Pesanan"><i class="bi bi-check2-square"></i></button>`
+            : '';
         let btnCancel = (tx.order_status !== 'completed' && tx.order_status !== 'cancelled')
             ? `<button class="btn btn-sm btn-outline-warning" onclick="cancelTransaction(${tx.id})" title="Batalkan Pesanan"><i class="bi bi-x-circle"></i></button>`
             : '';
@@ -117,6 +120,7 @@ function renderTable(transactions) {
                 <td class="text-center pe-4">
                     <div class="d-flex justify-content-center gap-1">
                         ${btnView}
+                        ${btnClose}
                         ${btnCancel}
                     </div>
                 </td>
@@ -162,6 +166,22 @@ function bulkDelete(ids) {
         error: function (xhr) {
             showAlert('error', 'Gagal menghapus transaksi.');
         }
+    });
+}
+
+function closeTransaction(id) {
+    confirmAction('Tutup Pesanan', 'Tandai pesanan ini selesai dan tutup order?', function () {
+        $.ajax({
+            url: API_URL + '/transactions/' + id + '/close',
+            type: 'PATCH',
+            success: function (res) {
+                showAlert('success', res.message);
+                loadTransactions(currentPage);
+            },
+            error: function (xhr) {
+                showAlert('error', xhr.responseJSON?.message || 'Gagal menutup pesanan.');
+            }
+        });
     });
 }
 

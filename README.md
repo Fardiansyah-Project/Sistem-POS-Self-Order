@@ -1,4 +1,32 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Koriro Coffee — POS Self-Order & Forecasting
+
+Aplikasi Laravel API/admin dashboard dan React PWA untuk POS self-order, Midtrans Snap, serta peramalan bahan baku WMA. Zona waktu aplikasi: **Asia/Makassar**.
+
+## Persyaratan dan instalasi
+
+Persyaratan: PHP 8.3+, Composer, Node.js/npm yang kompatibel dengan Vite 8, dan MySQL/MariaDB (atau database yang kompatibel dengan query project).
+
+1. Install dependency: `composer install` dan `npm install`.
+2. Salin `.env.example` menjadi `.env`; atur `APP_URL`, database (`DB_CONNECTION`, `DB_HOST`, `DB_PORT`, `DB_DATABASE`, `DB_USERNAME`, `DB_PASSWORD`), `APP_TIMEZONE=Asia/Makassar`, dan kredensial Midtrans yang dibaca `config/services.php`.
+3. Buat database, lalu jalankan:
+
+```bash
+php artisan key:generate
+php artisan migrate --seed
+npm run build
+```
+
+4. Jalankan `php artisan serve`. Untuk development frontend jalankan `npm run dev` di terminal terpisah.
+
+Pastikan `config/app.php` membaca `'timezone' => env('APP_TIMEZONE', 'Asia/Makassar')`; setelah mengubah konfigurasi jalankan `php artisan config:clear`. Gunakan Midtrans Sandbox saat development. URL webhook Midtrans: `https://<domain-anda>/api/v1/payments/webhook` (harus bisa diakses publik melalui HTTPS). Periksa `database/seeders/UserSeeder.php` untuk akun awal dan ganti password sebelum deployment. Admin: `/login`, dashboard: `/cms/admin`.
+
+## Fitur dan PWA
+
+Customer PWA tersedia di `/`; fitur admin mencakup produk, kategori, bahan baku, resep, POS, dapur, transaksi, laporan, dan forecast WMA. Manifest: `public/manifest.json`; service worker: `public/sw.js`. Instalasi PWA memerlukan HTTPS (localhost dapat digunakan untuk development). Setelah perubahan frontend jalankan `npm run build` dan reload untuk memperbarui aset service worker. Untuk pengujian offline, buka aplikasi online terlebih dahulu lalu gunakan mode offline DevTools. Checkout dan pembayaran tetap memerlukan koneksi jaringan—jangan mengandalkan cache untuk menyelesaikan transaksi.
+
+## Pengujian dan production
+
+Jalankan `php artisan test`. Production wajib menggunakan HTTPS, `APP_ENV=production`, `APP_DEBUG=false`, kredensial Midtrans production, backup database, dan hasil `npm run build`. Jangan commit `.env` maupun secret ke Git.
 
 <p align="center">
 <a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>

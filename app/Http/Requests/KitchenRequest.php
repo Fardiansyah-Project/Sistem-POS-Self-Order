@@ -12,7 +12,7 @@ class KitchenRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return false;
+        return true;
     }
 
     /**
@@ -23,7 +23,15 @@ class KitchenRequest extends FormRequest
     public function rules(): array
     {
         return [
-            //
+            'order_status' => ['required', 'in:processing,ready,completed'],
+        ];
+    }
+
+    public function messages(): array
+    {
+        return [
+            'order_status.required' => 'Status pesanan wajib dipilih.',
+            'order_status.in' => 'Status pesanan yang dipilih tidak valid.',
         ];
     }
 }

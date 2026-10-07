@@ -6,7 +6,9 @@ use App\Http\Controllers\Controller;
 use App\Models\Product;
 use App\Models\Transaction;
 use App\Models\TransactionDetail;
+use App\Models\OrderSetting;
 use App\Services\MidtransService;
+use App\Http\Requests\OrderRequest;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -30,19 +32,22 @@ class OrderController extends Controller
      *   ]
      * }
      */
-    public function store(Request $request): JsonResponse
+    public function store(OrderRequest $request): JsonResponse
     {
-        $validated = $request->validate([
-            'customer_name'      => ['required', 'string', 'max:100'],
-            'table_number'       => ['nullable', 'string', 'max:20'],
-            'notes'              => ['nullable', 'string', 'max:500'],
-            'items'              => ['required', 'array', 'min:1'],
-            'items.*.product_id' => ['required', 'integer', 'exists:products,id'],
-            'items.*.quantity'   => ['required', 'integer', 'min:1', 'max:20'],
-            'items.*.notes'      => ['nullable', 'string', 'max:200'],
-        ]);
+        $validated = $request->validated();
+
+        if (! OrderSetting::current()->is_open) {
+            return response()->json([
+                'message' => 'Pemesanan sedang ditutup. Silakan coba kembali nanti.',
+            ], 403);
+        }
 
         return DB::transaction(function () use ($validated) {
+            if (! OrderSetting::current()->is_open) {
+                return response()->json([
+                    'message' => 'Pemesanan sedang ditutup. Silakan coba kembali nanti.',
+                ], 403);
+            }
             $subtotal = 0;
             $details  = [];
 

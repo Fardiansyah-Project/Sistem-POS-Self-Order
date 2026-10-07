@@ -13,6 +13,7 @@ use App\Http\Controllers\Admin\IngredientController;
 use App\Http\Controllers\Admin\PosController;
 use App\Http\Controllers\Admin\RecipeController;
 use App\Http\Controllers\Admin\ReportController;
+use App\Http\Controllers\Api\V1\OrderAvailabilityController;
 
 Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login')->middleware('guest');
 Route::post('/login', [LoginController::class, 'login'])->name('login.post')->middleware('guest');
@@ -54,6 +55,8 @@ Route::prefix('cms/admin')->middleware('auth:web,sanctum')->group(function () {
 
         // Dashboard
         Route::get('/dashboard', [DashboardController::class, 'data'])->name('dashboard');
+        Route::get('/order-availability', [OrderAvailabilityController::class, 'show'])->name('order-availability.show');
+        Route::patch('/order-availability', [OrderAvailabilityController::class, 'update'])->name('order-availability.update');
 
         // Categories CRUD
         Route::get('/categories', [CategoryController::class, 'index'])->name('categories.index');
@@ -86,6 +89,7 @@ Route::prefix('cms/admin')->middleware('auth:web,sanctum')->group(function () {
         Route::get('/transactions/{transaction}', [TransactionController::class, 'show'])->name('transactions.show');
         Route::delete('/transactions/bulk-destroy', [TransactionController::class, 'bulkDestroy'])->name('transactions.bulkDestroy');
         Route::patch('/transactions/{transaction}/cancel', [TransactionController::class, 'cancel'])->name('transactions.cancel');
+        Route::patch('/transactions/{transaction}/close', [TransactionController::class, 'close'])->name('transactions.close');
 
         // Kitchen
         Route::get('/kitchen', [KitchenController::class, 'index'])->name('kitchen.index');

@@ -24,7 +24,7 @@ class ProductRequest extends FormRequest
     {
         return [
             'category_id'  => 'required|exists:categories,id',
-            'name'         => 'required|string|max:150',
+            'name'         => 'required|string|max:150' . ($this->route('product') ? '|unique:products,name,' . $this->route('product')->id : '|unique:products,name'),
             'description'  => 'nullable|string',
             'price'        => 'required|numeric|min:0',
             'image'        => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048',
@@ -37,6 +37,7 @@ class ProductRequest extends FormRequest
     {
         return [
             'name.required'        => 'Nama produk harus diisi.',
+            'name.unique'          => 'Nama produk sudah terdaftar.',
             'name.unique'          => 'Nama produk sudah terdaftar.',
             'category_id.required' => 'Kategori harus dipilih.',
             'category_id.exists'   => 'Kategori yang dipilih tidak valid.',
